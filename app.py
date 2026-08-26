@@ -96,10 +96,10 @@ div.stDownloadButton > button:hover {
     color: #1b5e20 !important;
 }
 
-/* 6. ตกแต่งส่วน Footer ท้ายเว็บ */
+/* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ให้ชิดซ้ายทั้งหมด) */
 .custom-footer {
     font-family: 'Sarabun', sans-serif;
-    text-align: center;
+    text-align: left; /* เปลี่ยนจาก center เป็น left */
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
@@ -122,7 +122,7 @@ div.stDownloadButton > button:hover {
 .advisor-row {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start; /* จัดเรียงชิดซ้าย */
     gap: 20px;
     margin: 15px 0 25px 0;
 }
@@ -133,7 +133,7 @@ div.stDownloadButton > button:hover {
     color: #424242;
 }
 .dev-card {
-    margin: 0 auto 20px auto;
+    margin: 0 0 20px 0; /* ยกเลิก auto margin ดึงให้ชิดซ้าย */
     padding: 20px;
     border: 1px dashed #cfd8dc;
     border-radius: 12px;
@@ -579,23 +579,19 @@ def generate_documents_process(
                 code_ref = f"S/N {p['sn']}" if is_repair_job else f"NSN {p['nsn']}"
                 sub_item_thai = to_thai_num(index + 1)
 
-                str_letter = (
-                    f"\n---------------{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
+                # 📌 เปลี่ยนเป็น \t (Tab) เพื่อล็อกระยะให้ตรงกันทั้งหนังสือ กห. และ บันทึกข้อความ
+                list_letter.append(
+                    f"\t{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
                     f" {code_ref} จำนวน {p['qty']} {p['ua']}"
                 )
-                list_letter.append(
-                    str_letter.replace("---------------", "             ")
-                )
                 list_memo.append(
-                    f"\n                   ๑.{sub_item_thai}\u200b"
+                    f"\t๑.{sub_item_thai}\u200b"
                     f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
                     f" {p['ua']}"
                 )
 
-            part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
-                "\n", "\t\n"
-            )
-            part_details_memo = ("ดังนี้:" + "".join(list_memo)).replace("\n", "\t\n")
+            part_details_letter = "ดังนี้:\n" + "\n".join(list_letter)
+            part_details_memo = "ดังนี้:\n" + "\n".join(list_memo)
         else:
             part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
             part_details_memo = part_details_letter
@@ -730,10 +726,20 @@ except Exception as e:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# 2. ปุ่มสั่งสร้างเอกสาร Word
+# =========================================================================
+# 📌 จุดที่ 3: ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
+# =========================================================================
+SECRET_PASSWORD = "ASD"  # 👈 รหัสผ่านสำหรับอนุมัติการพิมพ์เอกสาร
+
+doc_password = st.text_input(
+    "🔒 กรอกรหัสผ่านเพื่ออนุมัติการสร้างเอกสาร:", type="password"
+)
+
 if st.button("🚀 เริ่มสร้างเอกสาร Word", type="primary"):
     if not selected_lp:
         st.warning("กรุณาเลือกรหัส LP ก่อนครับ")
+    elif doc_password != SECRET_PASSWORD:
+        st.error("❌ รหัสผ่านไม่ถูกต้อง! ไม่ได้รับอนุญาตให้สร้างเอกสารราชการฉบับนี้")
     else:
         log_area = st.empty()
         logs_list = []
