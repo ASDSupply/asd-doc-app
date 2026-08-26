@@ -784,47 +784,46 @@ st.markdown("---")
 st.markdown(
     """
 <div class="custom-footer">
-    <div class="footer-system-title">
-        ระบบบริหารจัดการเอกสารและติดตามงบประมาณจ้างเหมาอัจฉริยะ (ฝ่ายแจ้งความต้องการ)
-    </div>
+<div class="footer-system-title">
+ระบบบริหารจัดการเอกสารและติดตามงบประมาณจ้างเหมาอัจฉริยะ (ฝ่ายแจ้งความต้องการ)
+</div>
 
-    <div class="footer-leader">
-        <span class="material-icons" style="vertical-align: middle; color: #43a047; font-size: 1.2rem;">star</span>
-        อำนวยการและสนับสนุนการพัฒนาระบบโดย: <strong>น.อ. อมรพงศ์ เอี่ยมสะอาด</strong>
-        <br><small style="color: #616161;">(ผู้อำนวยการกองพัสดุช่างอากาศ)</small>
-    </div>
+<div class="footer-leader">
+<span class="material-icons" style="vertical-align: middle; color: #43a047; font-size: 1.2rem;">star</span>
+อำนวยการและสนับสนุนการพัฒนาระบบโดย: <strong>น.อ. อมรพงศ์ เอี่ยมสะอาด</strong>
+<br><small style="color: #616161;">(ผู้อำนวยการกองพัสดุช่างอากาศ)</small>
+</div>
 
-    <div class="advisor-row">
-        <div class="advisor-col">
-            <span class="material-icons" style="vertical-align: middle; color: #fb8c00; font-size: 1.1rem;">lightbulb</span>
-            ที่ปรึกษาด้านข้อมูลและระบบ: <strong>ร.ท.ตุนท์ นามตาปี บำรุงศักดิ์</strong>
-            <br><small style="color: #757575;">(รอง หน.ฝจก.ผคค.กพอ.ชอ.)</small>
-        </div>
-        <div class="advisor-col">
-            <span class="material-icons" style="vertical-align: middle; color: #fb8c00; font-size: 1.1rem;">lightbulb</span>
-            ที่ปรึกษาด้านข้อมูลและระบบ: <strong>ร.ต.อาทิตย์ ศรีประสิทธิ์</strong>
-            <br><small style="color: #757575;">(หน.มว.แจ้งความต้องการต่างประเทศ ฝจก.ผคค.กพอ.ชอ.)</small>
-        </div>
-    </div>
+<div class="advisor-row">
+<div class="advisor-col">
+<span class="material-icons" style="vertical-align: middle; color: #fb8c00; font-size: 1.1rem;">lightbulb</span>
+ที่ปรึกษาด้านข้อมูลและระบบ: <strong>ร.ท.ตุนท์ นามตาปี บำรุงศักดิ์</strong>
+<br><small style="color: #757575;">(รอง หน.ฝจก.ผคค.กพอ.ชอ.)</small>
+</div>
+<div class="advisor-col">
+<span class="material-icons" style="vertical-align: middle; color: #fb8c00; font-size: 1.1rem;">lightbulb</span>
+ที่ปรึกษาด้านข้อมูลและระบบ: <strong>ร.ต.อาทิตย์ ศรีประสิทธิ์</strong>
+<br><small style="color: #757575;">(หน.มว.แจ้งความต้องการต่างประเทศ ฝจก.ผคค.กพอ.ชอ.)</small>
+</div>
+</div>
+<div class="dev-card">
+<div style="font-size: 1.05rem; color: #37474f;">
+<span class="material-icons" style="vertical-align: middle; color: #1e88e5; font-size: 1.2rem;">code</span>
+ผู้พัฒนาและผู้ดูแลระบบ: <strong>ธรรศ วรวัฒนานุกูล</strong>
+<br><small style="color: #616161;">(พนักงานบริการพัสดุ ฝจก.ผคค.กพอ.ชอ.)</small>
+</div>
+<div>
+<a href="mailto:req-daesupply@requirements-asd.com?subject=_WEB%20System%20Error%20Report" class="btn-report">
+<span class="material-icons" style="vertical-align: middle; font-size: 1.1rem; margin-right: 4px;">contact_support</span>
+คลิกเพื่อแจ้งปัญหาการใช้งาน
+</a>
+</div>
+</div>
 
-    <div class="dev-card">
-        <div style="font-size: 1.05rem; color: #37474f;">
-            <span class="material-icons" style="vertical-align: middle; color: #1e88e5; font-size: 1.2rem;">code</span>
-            ผู้พัฒนาและผู้ดูแลระบบ: <strong>ธรรศ วรวัฒนานุกูล</strong>
-            <br><small style="color: #616161;">(พนักงานบริการพัสดุ ฝจก.ผคค.กพอ.ชอ.)</small>
-        </div>
-        <div>
-            <a href="mailto:req-daesupply@requirements-asd.com?subject=_WEB%20System%20Error%20Report" class="btn-report">
-                <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem; margin-right: 4px;">contact_support</span>
-                คลิกเพื่อแจ้งปัญหาการใช้งาน
-            </a>
-        </div>
-    </div>
-
-    <div class="copyright-text">
-        © 2026 ASD REQUIREMENTS SUPPLY | All Rights Reserved
-    </div>
+<div class="copyright-text">
+© 2026 ASD REQUIREMENTS SUPPLY | All Rights Reserved
+</div>
 </div>
 """,
-    unsafe_allow_html=True,
+unsafe_allow_html=True,
 )
