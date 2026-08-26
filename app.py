@@ -96,10 +96,10 @@ div.stDownloadButton > button:hover {
     color: #1b5e20 !important;
 }
 
-/* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ให้ชิดซ้ายทั้งหมด) */
+/* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ให้ชิดซ้ายตามบรีฟ) */
 .custom-footer {
     font-family: 'Sarabun', sans-serif;
-    text-align: left; /* เปลี่ยนจาก center เป็น left */
+    text-align: left; 
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
@@ -122,7 +122,7 @@ div.stDownloadButton > button:hover {
 .advisor-row {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-start; /* จัดเรียงชิดซ้าย */
+    justify-content: flex-start;
     gap: 20px;
     margin: 15px 0 25px 0;
 }
@@ -133,7 +133,7 @@ div.stDownloadButton > button:hover {
     color: #424242;
 }
 .dev-card {
-    margin: 0 0 20px 0; /* ยกเลิก auto margin ดึงให้ชิดซ้าย */
+    margin: 0 0 20px 0;
     padding: 20px;
     border: 1px dashed #cfd8dc;
     border-radius: 12px;
@@ -579,18 +579,26 @@ def generate_documents_process(
                 code_ref = f"S/N {p['sn']}" if is_repair_job else f"NSN {p['nsn']}"
                 sub_item_thai = to_thai_num(index + 1)
 
-                # 📌 เปลี่ยนเป็น \t (Tab) เพื่อล็อกระยะให้ตรงกันทั้งหนังสือ กห. และ บันทึกข้อความ
-                list_letter.append(
-                    f"\t{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
+                # 📌 หนังสือภายนอก: กลับมาใช้ลอจิกเดิมของคุณ 100% ไม่ยุ่งกับ \t แล้วครับ
+                str_letter = (
+                    f"\n---------------{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
                     f" {code_ref} จำนวน {p['qty']} {p['ua']}"
                 )
+                list_letter.append(
+                    str_letter.replace("---------------", "             ")
+                )
+                
+                # 📌 บันทึกข้อความ: ระยะห่าง 1 บรรทัด (เอา \n ออก) และล็อก 28 เคาะ (ขยับเข้า 2.8) 
                 list_memo.append(
-                    f"\t๑.{sub_item_thai}\u200b"
+                    f"                            ๑.{sub_item_thai}\u200b"
                     f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
                     f" {p['ua']}"
                 )
 
-            part_details_letter = "ดังนี้:\n" + "\n".join(list_letter)
+            part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
+                "\n", "\t\n"
+            )
+            # 📌 บันทึกข้อความ เชื่อมด้วย \n ธรรมดาเพื่อเว้น 1 บรรทัด
             part_details_memo = "ดังนี้:\n" + "\n".join(list_memo)
         else:
             part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
@@ -727,9 +735,9 @@ except Exception as e:
 st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📌 จุดที่ 3: ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
+# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
 # =========================================================================
-SECRET_PASSWORD = "ASD"  # 👈 รหัสผ่านสำหรับอนุมัติการพิมพ์เอกสาร
+SECRET_PASSWORD = "ASD" 
 
 doc_password = st.text_input(
     "🔒 กรอกรหัสผ่านเพื่ออนุมัติการสร้างเอกสาร:", type="password"
@@ -784,7 +792,7 @@ if st.button("🚀 เริ่มสร้างเอกสาร Word", type=
             )
 
 # =========================================================================
-# 📌 FOOTER SECTION (คณะผู้จัดทำ & ผู้ดูแลระบบ ถอดแบบต้นฉบับ 100%)
+# 📌 FOOTER SECTION 
 # =========================================================================
 st.markdown("---")
 st.markdown(
@@ -813,7 +821,7 @@ st.markdown(
 </div>
 </div>
 <div class="dev-card">
-<div style="font-size: 1.05rem; color: #37474f;">
+<div style="font-size: 0.94rem; color: #37474f;">
 <span class="material-icons" style="vertical-align: middle; color: #1e88e5; font-size: 1.2rem;">code</span>
 ผู้พัฒนาและผู้ดูแลระบบ: <strong>ธรรศ วรวัฒนานุกูล</strong>
 <br><small style="color: #616161;">(พนักงานบริการพัสดุ ฝจก.ผคค.กพอ.ชอ.)</small>
