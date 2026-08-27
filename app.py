@@ -590,7 +590,7 @@ def generate_documents_process(
         )
         # 📌 แก้ไขจุดที่ 1-2: ล็อก 28 เคาะตามบรีฟ (เอา \n ด้านหน้าออกเพื่อไม่ให้โดดห่าง)
         list_memo.append(
-            f"                     ๑.{sub_item_thai}\u200b"
+            f"                      ๑.{sub_item_thai}\u200b"
             f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
             f" {p['ua']}"
         )
