@@ -21,155 +21,155 @@ st.set_page_config(
 
 st.markdown(
     """
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-<style>
-/* 1. ปรับแต่งฟอนต์และธีมพื้นหลังทั้งเว็บ */
-html, body, [class*="css"] {
-    font-family: 'Prompt', 'Sarabun', sans-serif !important;
-    background-color: #f8fafc !important;
-}
+    <style>
+        /* 1. ปรับแต่งฟอนต์และธีมพื้นหลังทั้งเว็บ */
+        html, body, [class*="css"] {
+            font-family: 'Prompt', 'Sarabun', sans-serif !important;
+            background-color: #f8fafc !important;
+        }
 
-/* 2. ซ่อน Header/Footer รกๆ ของ Streamlit Default */
-#MainMenu {visibility: hidden;}
-header {visibility: hidden;}
-footer {visibility: hidden;}
+        /* 2. ซ่อน Header/Footer รกๆ ของ Streamlit Default */
+        #MainMenu {visibility: hidden;}
+        header {visibility: hidden;}
+        footer {visibility: hidden;}
 
-/* 3. ตกแต่งหัวข้อหลัก (Executive Header Bar) */
-.main-header-box {
-    background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
-    padding: 28px 20px;
-    border-radius: 16px;
-    color: white;
-    text-align: center;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 20px rgba(13, 71, 161, 0.2);
-}
-.main-title {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin: 0;
-    color: #ffffff;
-    letter-spacing: -0.3px;
-}
-.main-subtitle {
-    font-size: 1.05rem;
-    opacity: 0.9;
-    margin-top: 6px;
-    font-weight: 400;
-}
+        /* 3. ตกแต่งหัวข้อหลัก (Executive Header Bar) */
+        .main-header-box {
+            background: linear-gradient(135deg, #0d47a1 0%, #1976d2 100%);
+            padding: 28px 20px;
+            border-radius: 16px;
+            color: white;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(13, 71, 161, 0.2);
+        }
+        .main-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+        .main-subtitle {
+            font-size: 1.05rem;
+            opacity: 0.9;
+            margin-top: 6px;
+            font-weight: 400;
+        }
 
-/* 4. ปรับแต่งปุ่มกดหลัก (Primary Button) */
-div.stButton > button[kind="primary"] {
-    background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%) !important;
-    color: white !important;
-    border-radius: 12px !important;
-    padding: 12px 28px !important;
-    font-size: 1.1rem !important;
-    font-weight: 600 !important;
-    border: none !important;
-    box-shadow: 0 4px 14px rgba(13, 71, 161, 0.35) !important;
-    transition: all 0.3s ease !important;
-    width: 100% !important;
-}
-div.stButton > button[kind="primary"]:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(13, 71, 161, 0.5) !important;
-}
+        /* 4. ปรับแต่งปุ่มกดหลัก (Primary Button) */
+        div.stButton > button[kind="primary"] {
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%) !important;
+            color: white !important;
+            border-radius: 12px !important;
+            padding: 12px 28px !important;
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            border: none !important;
+            box-shadow: 0 4px 14px rgba(13, 71, 161, 0.35) !important;
+            transition: all 0.3s ease !important;
+            width: 100% !important;
+        }
+        div.stButton > button[kind="primary"]:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(13, 71, 161, 0.5) !important;
+        }
 
-/* 5. ปรับแต่งปุ่มดาวน์โหลดเอกสาร (Download Buttons) */
-div.stDownloadButton > button {
-    background: #ffffff !important;
-    color: #2e7d32 !important;
-    border: 2px solid #a5d6a7 !important;
-    border-radius: 12px !important;
-    font-weight: 600 !important;
-    padding: 10px 20px !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
-    transition: all 0.2s ease !important;
-    width: 100% !important;
-}
-div.stDownloadButton > button:hover {
-    background: #e8f5e9 !important;
-    border-color: #2e7d32 !important;
-    color: #1b5e20 !important;
-}
+        /* 5. ปรับแต่งปุ่มดาวน์โหลดเอกสาร (Download Buttons) */
+        div.stDownloadButton > button {
+            background: #ffffff !important;
+            color: #2e7d32 !important;
+            border: 2px solid #a5d6a7 !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            padding: 10px 20px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+            transition: all 0.2s ease !important;
+            width: 100% !important;
+        }
+        div.stDownloadButton > button:hover {
+            background: #e8f5e9 !important;
+            border-color: #2e7d32 !important;
+            color: #1b5e20 !important;
+        }
 
-/* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ให้ชิดซ้ายตามบรีฟ) */
-.custom-footer {
-    font-family: 'Sarabun', sans-serif;
-    text-align: left; 
-    background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 35px 20px;
-    margin-top: 40px;
-    color: #333333;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-}
-.footer-system-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #37474f;
-    margin-bottom: 20px;
-}
-.footer-leader {
-    margin-bottom: 18px;
-    font-size: 1.05rem;
-    color: #212121;
-}
-.advisor-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 20px;
-    margin: 15px 0 25px 0;
-}
-.advisor-col {
-    flex: 1 1 260px;
-    max-width: 340px;
-    font-size: 0.95rem;
-    color: #424242;
-}
-.dev-card {
-    margin: 0 0 20px 0;
-    padding: 20px;
-    border: 1px dashed #cfd8dc;
-    border-radius: 12px;
-    max-width: 580px;
-    background-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-.btn-report {
-    display: inline-block;
-    margin-top: 14px;
-    padding: 8px 22px;
-    background-color: #1565c0;
-    color: #ffffff !important;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    text-decoration: none;
-    box-shadow: 0 2px 5px rgba(21, 101, 192, 0.3);
-    transition: all 0.2s ease-in-out;
-}
-.btn-report:hover {
-    background-color: #0d47a1;
-    box-shadow: 0 4px 10px rgba(13, 71, 161, 0.4);
-}
-.copyright-text {
-    font-size: 0.85rem;
-    color: #9e9e9e;
-    margin-top: 25px;
-}
-</style>
+        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ไขเป็นชิดซ้ายตามบรีฟ) */
+        .custom-footer {
+            font-family: 'Sarabun', sans-serif;
+            text-align: left;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 35px 20px;
+            margin-top: 40px;
+            color: #333333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        }
+        .footer-system-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #37474f;
+            margin-bottom: 20px;
+        }
+        .footer-leader {
+            margin-bottom: 18px;
+            font-size: 1.05rem;
+            color: #212121;
+        }
+        .advisor-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 20px;
+            margin: 15px 0 25px 0;
+        }
+        .advisor-col {
+            flex: 1 1 260px;
+            max-width: 340px;
+            font-size: 0.95rem;
+            color: #424242;
+        }
+        .dev-card {
+            margin: 0 0 20px 0;
+            padding: 20px;
+            border: 1px dashed #cfd8dc;
+            border-radius: 12px;
+            max-width: 580px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .btn-report {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 8px 22px;
+            background-color: #1565c0;
+            color: #ffffff !important;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(21, 101, 192, 0.3);
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-report:hover {
+            background-color: #0d47a1;
+            box-shadow: 0 4px 10px rgba(13, 71, 161, 0.4);
+        }
+        .copyright-text {
+            font-size: 0.85rem;
+            color: #9e9e9e;
+            margin-top: 25px;
+        }
+    </style>
 
-<div class="main-header-box">
-    <div class="main-title">📄 ระบบสร้างหนังสือราชการอัตโนมัติ (ASD)</div>
-    <div class="main-subtitle">ฝ่ายแจ้งความต้องการ กองพัสดุช่างอากาศ (ผคค.กพอ.ชอ.)</div>
-</div>
-""",
+    <div class="main-header-box">
+        <div class="main-title">📄 ระบบสร้างหนังสือราชการอัตโนมัติ (ASD)</div>
+        <div class="main-subtitle">ฝ่ายแจ้งความต้องการ กองพัสดุช่างอากาศ (ผคค.กพอ.ชอ.)</div>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
@@ -181,14 +181,16 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # 📂 โฟลเดอร์ปลายทางสำหรับเก็บเอกสารที่สร้างเสร็จแล้ว
 OUTPUT_DIR = os.path.join(BASE_DIR, "กห.ภายนอก บันทึกข้อความ")
 if not os.path.exists(OUTPUT_DIR):
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+  os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 CREDENTIALS_DICT = {
     "type": "service_account",
     "project_id": "natural-choir-469013-f1",
     "private_key_id": "5e7f63e863ce2079edad42eb4c9054cc702403d3",
     "private_key": (
-        "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCba6rMpp8xvAIy\ndgrVrqK8NuEShuP89VZ4cGEt03nTFibSW8wv0OlhQ9gHshmsyJ19CaYTbGMFk+FN\niLqU4PHFYoQp681VdGY8XbuR0HpiR+3zUqxv6Ps49LaDKi9aj+jwhlCkS8nrHr/D\neFojhyUCf88qNE2/EKy7oHxtL7t1siI56gXDl400qsRYDvEipWcng7868C7Gq4qB\nQGuyj5VqUbkmpFrJ3z/IHVCph3gR5DqSTLF7boTVWpq57iBvdwB1ti9Dh6yqteHP\neQNEKFiq6ImXTmUj1cUvydqK3VJp0kmVEqX3FiLVPp8gH8r6opH4iQET0QKEcpnu\nrQin/0LrAgMBAAECggEACRwVICG0EF+LZsHHKMyE+rCMyLU3WnWsN9WpHIfaCtFa\n59bm76E4d1xZUTooicQd1we1wEsIvXme1G3rNxwS5RWSgZKHWow+tyhsp238073m\nPe4z7+tMA66e9APeUASXYWG+CviWQT3FfQOU5Pg1kcvurJ6cNVLDjSEpqeIJBCuc\nC8qU3/z/KrzgvRWRMuZjyPsWltDJ2EwUxRtqTiFmYL6933sOUGTAsS7V6az0T1JI\nl9NTrOnCuGuVLZq7dYAoAjUihtfG0NlbWciagQTL4bRpCP98bCIBsAenSzbeFFbk\nJjGIhPwISlx5nGaVrJMmJYTpKY93ErfoGYGF6g31oQKBgQDIMOeFPXOG9z9w6Ddo\nS35Py0JdEaRDkweD1mVkkp5nSzV/WV3zFL43scHlLaszg9c7Bz/LvyU8gGoxokqx\nAp8jH9dBoFrsHTqejY7VrBMuKNWENWaTYOtQ8sA7N2pcfNtQZBlRQDo/e3U+piQW\nkZUU2hY4RQIUbBT5xodG8Lh37wKBgQDGv52akNtOUkxCsI38UyMXZv5TBHZCkNA0\ny12Ctk8/N496V6doRwHb4n7YeoOiA+GkJTly03irFd/Gwim3vXaNpmOLXKVPkoju\n/Q2GQVCkE7FzNLseNGdEYs0+dRIyZubyRuYLrtMvE3LreyAWTJAx/Uc+M8xPmsnY\nOJEixuyIxQKBgDlD3AZ+NJzn/yrSEn9wEPrMXvh2gnGeDmlFHA3v7wYHOo9qRfix\n91PBMoDXVoDO9vN4uGQVEpbC+R2nmgwWfuUyR4YLU9b06X7PaYtvxLDQl3tRNz1z\nXPzz489Mo80/HhFaAPAAGmlsbHZ2Wh5mmKm1VOPVwamL3Vgx1SKS24HbAoGBAJ9T\n2Uqhuc2t2AjWdNzE4SrPnC59Mzjl0qOgLFSvRhRNvC29uyyzT+AwULPGc2QcbHUk\nikttEB1HKd+yo7Lypemka8S6/qMtu6yrHH52OelvCCBtM1xhci+2bQcW3wGc0KOF\nBsJy4kWo98WjLPPzaN1KSCSrbaybUBiQMHmKsvBpAoGAGlY5BU5H0ffV6ynen4s8\nxObPoO1akCeplu75mo0NRn+X48ISQjp86MrlMn7cY/DcobiBUOLUWGrQveDpVsrc\nO+fBF5obJZi4fRMF2RwGI47nk1ubcXtZs26EtzDwJyNygbOZiEMVWKliNuc5Ci6B\nQ3QjHPocAsYJSI7beZGhf0M=\n-----END PRIVATE KEY-----\n"
+        "-----BEGIN PRIVATE"
+        " KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCba6rMpp8xvAIy\ndgrVrqK8NuEShuP89VZ4cGEt03nTFibSW8wv0OlhQ9gHshmsyJ19CaYTbGMFk+FN\niLqU4PHFYoQp681VdGY8XbuR0HpiR+3zUqxv6Ps49LaDKi9aj+jwhlCkS8nrHr/D\neFojhyUCf88qNE2/EKy7oHxtL7t1siI56gXDl400qsRYDvEipWcng7868C7Gq4qB\nQGuyj5VqUbkmpFrJ3z/IHVCph3gR5DqSTLF7boTVWpq57iBvdwB1ti9Dh6yqteHP\neQNEKFiq6ImXTmUj1cUvydqK3VJp0kmVEqX3FiLVPp8gH8r6opH4iQET0QKEcpnu\nrQin/0LrAgMBAAECggEACRwVICG0EF+LZsHHKMyE+rCMyLU3WnWsN9WpHIfaCtFa\n59bm76E4d1xZUTooicQd1we1wEsIvXme1G3rNxwS5RWSgZKHWow+tyhsp238073m\nPe4z7+tMA66e9APeUASXYWG+CviWQT3FfQOU5Pg1kcvurJ6cNVLDjSEpqeIJBCuc\nC8qU3/z/KrzgvRWRMuZjyPsWltDJ2EwUxRtqTiFmYL6933sOUGTAsS7V6az0T1JI\nl9NTrOnCuGuVLZq7dYAoAjUihtfG0NlbWciagQTL4bRpCP98bCIBsAenSzbeFFbk\nJjGIhPwISlx5nGaVrJMmJYTpKY93ErfoGYGF6g31oQKBgQDIMOeFPXOG9z9w6Ddo\nS35Py0JdEaRDkweD1mVkkp5nSzV/WV3zFL43scHlLaszg9c7Bz/LvyU8gGoxokqx\nAp8jH9dBoFrsHTqejY7VrBMuKNWENWaTYOtQ8sA7N2pcfNtQZBlRQDo/e3U+piQW\nkZUU2hY4RQIUbBT5xodG8Lh37wKBgQDGv52akNtOUkxCsI38UyMXZv5TBHZCkNA0\ny12Ctk8/N496V6doRwHb4n7YeoOiA+GkJTly03irFd/Gwim3vXaNpmOLXKVPkoju\n/Q2GQVCkE7FzNLseNGdEYs0+dRIyZubyRuYLrtMvE3LreyAWTJAx/Uc+M8xPmsnY\nOJEixuyIxQKBgDlD3AZ+NJzn/yrSEn9wEPrMXvh2gnGeDmlFHA3v7wYHOo9qRfix\n91PBMoDXVoDO9vN4uGQVEpbC+R2nmgwWfuUyR4YLU9b06X7PaYtvxLDQl3tRNz1z\nXPzz489Mo80/HhFaAPAAGmlsbHZ2Wh5mmKm1VOPVwamL3Vgx1SKS24HbAoGBAJ9T\n2Uqhuc2t2AjWdNzE4SrPnC59Mzjl0qOgLFSvRhRNvC29uyyzT+AwULPGc2QcbHUk\nikttEB1HKd+yo7Lypemka8S6/qMtu6yrHH52OelvCCBtM1xhci+2bQcW3wGc0KOF\nBsJy4kWo98WjLPPzaN1KSCSrbaybUBiQMHmKsvBpAoGAGlY5BU5H0ffV6ynen4s8\nxObPoO1akCeplu75mo0NRn+X48ISQjp86MrlMn7cY/DcobiBUOLUWGrQveDpVsrc\nO+fBF5obJZi4fRMF2RwGI47nk1ubcXtZs26EtzDwJyNygbOZiEMVWKliNuc5Ci6B\nQ3QjHPocAsYJSI7beZGhf0M=\n-----END"
+        " PRIVATE KEY-----\n"
     ),
     "client_email": "printlog@natural-choir-469013-f1.iam.gserviceaccount.com",
     "client_id": "101691942194098646397",
@@ -317,21 +319,21 @@ THAI_MONTHS_SHORT = [
 
 
 def to_thai_num(num):
-    if num is None:
-        return ""
-    thai_digits = {
-        "0": "๐",
-        "1": "๑",
-        "2": "๒",
-        "3": "๓",
-        "4": "๔",
-        "5": "๕",
-        "6": "๖",
-        "7": "๗",
-        "8": "๘",
-        "9": "๙",
-    }
-    return "".join(thai_digits.get(ch, ch) for ch in str(num))
+  if num is None:
+    return ""
+  thai_digits = {
+      "0": "๐",
+      "1": "๑",
+      "2": "๒",
+      "3": "๓",
+      "4": "๔",
+      "5": "๕",
+      "6": "๖",
+      "7": "๗",
+      "8": "๘",
+      "9": "๙",
+  }
+  return "".join(thai_digits.get(ch, ch) for ch in str(num))
 
 
 # =========================================================================
@@ -340,351 +342,350 @@ def to_thai_num(num):
 def generate_documents_process(
     unique_id, template_source_mode, log_func, finish_callback
 ):
-    try:
-        log_func(f"🚀 เริ่มต้นสร้างเอกสารสำหรับ: {unique_id}")
-        upper_id = unique_id.strip().upper()
-        is_repair_job = "LP9" in upper_id or "LP 9" in upper_id
+  try:
+    log_func(f"🚀 เริ่มต้นสร้างเอกสารสำหรับ: {unique_id}")
+    upper_id = unique_id.strip().upper()
+    is_repair_job = "LP9" in upper_id or "LP 9" in upper_id
 
-        out_letter_path = os.path.join(OUTPUT_DIR, f"หนังสือภายนอก_{unique_id}.docx")
-        out_memo_path = os.path.join(OUTPUT_DIR, f"บันทึกข้อความ_{unique_id}.docx")
+    out_letter_path = os.path.join(OUTPUT_DIR, f"หนังสือภายนอก_{unique_id}.docx")
+    out_memo_path = os.path.join(OUTPUT_DIR, f"บันทึกข้อความ_{unique_id}.docx")
 
-        if is_repair_job:
-            target_letter_url = LETTER_LP9_URL
-            target_memo_url = MEMO_LP9_URL
-            local_letter_file = "template_letter_lp9.docx"
-            local_memo_file = "template_memo_lp9.docx"
-        else:
-            target_letter_url = LETTER_NORMAL_URL
-            target_memo_url = MEMO_NORMAL_URL
-            local_letter_file = "template_letter_normal.docx"
-            local_memo_file = "template_memo_normal.docx"
+    if is_repair_job:
+      target_letter_url = LETTER_LP9_URL
+      target_memo_url = MEMO_LP9_URL
+      local_letter_file = "template_letter_lp9.docx"
+      local_memo_file = "template_memo_lp9.docx"
+    else:
+      target_letter_url = LETTER_NORMAL_URL
+      target_memo_url = MEMO_NORMAL_URL
+      local_letter_file = "template_letter_normal.docx"
+      local_memo_file = "template_memo_normal.docx"
 
-        path_letter = os.path.join(BASE_DIR, local_letter_file)
-        path_memo = os.path.join(BASE_DIR, local_memo_file)
+    path_letter = os.path.join(BASE_DIR, local_letter_file)
+    path_memo = os.path.join(BASE_DIR, local_memo_file)
 
-        if template_source_mode == "online":
-            log_func("⏳ กำลังดาวน์โหลด Template Word จาก OneDrive...")
-            open(path_letter, "wb").write(
-                requests.get(target_letter_url, allow_redirects=True).content
-            )
-            open(path_memo, "wb").write(
-                requests.get(target_memo_url, allow_redirects=True).content
-            )
-        else:
-            log_func("📁 กำลังดึงไฟล์แม่แบบจากภายในเครื่อง...")
-            if not os.path.exists(path_letter) or not os.path.exists(path_memo):
-                raise FileNotFoundError(
-                    f"ไม่พบไฟล์แม่แบบ {local_letter_file} หรือ {local_memo_file} ในเครื่อง"
-                )
-
-        if "BELL-412EP" in upper_id or "412EP" in upper_id:
-            raw_model = "BELL-412EP"
-        else:
-            parts = unique_id.split("-")
-            raw_model = parts[1].strip() if len(parts) >= 3 else unique_id
-
-        full_model = FULL_HELICOPTER_NAMES.get(raw_model, raw_model).strip()
-        short_model = SHORT_HELICOPTER_NAMES.get(raw_model, raw_model).strip()
-        contract_no = HELICOPTER_CONTRACT_MAP.get(raw_model, "-").strip()
-
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive",
-        ]
-        gc = gspread.service_account_from_dict(CREDENTIALS_DICT, scopes=scopes)
-
-        ss = gc.open_by_key(SPREADSHEET_ID)
-        logs_data = ss.worksheet("PrintLogs").get_all_values()
-
-        target_sheet_name = ""
-        for i in range(len(logs_data) - 1, 0, -1):
-            if len(logs_data[i]) > 1 and logs_data[i][1].strip().upper() == upper_id:
-                if len(logs_data[i]) > 3:
-                    target_sheet_name = logs_data[i][3].strip()
-                    break
-
-        if not target_sheet_name:
-            raise ValueError(f"ไม่พบประวัติรหัส {unique_id} ในชีต PrintLogs")
-
-        master_data = (
-            gc.open_by_key(UPLOADEDFILES2_ID)
-            .worksheet(target_sheet_name)
-            .get_all_values()
-        )
-        if len(master_data) <= 3:
-            raise ValueError("ข้อมูลพัสดุในชีตน้อยเกินไป (ไม่พบหัวตาราง)")
-
-        master_headers = [str(h).upper().strip() for h in master_data[3]]
-        idx_item = next(
-            (
-                i
-                for i, h in enumerate(master_headers)
-                if "ลำดับ" in h or "ITEM" in h or "NO" in h
-            ),
-            0,
-        )
-        idx_pn = next(
-            (i for i, h in enumerate(master_headers) if "P/N" in h or "PN" in h), -1
-        )
-        idx_nsn = next(
-            (i for i, h in enumerate(master_headers) if "NSN" in h), -1
-        )
-        idx_sn = next(
-            (i for i, h in enumerate(master_headers) if "S/N" in h or "SN" in h), -1
-        )
-        idx_name = next(
-            (
-                i
-                for i, h in enumerate(master_headers)
-                if "NAME" in h or "DESCRIPTION" in h or "รายการ" in h
-            ),
-            -1,
-        )
-        idx_qty = next(
-            (
-                i
-                for i, h in enumerate(master_headers)
-                if "QTY" in h or "QUANTITY" in h
-            ),
-            -1,
-        )
-        idx_ua = next(
-            (
-                i
-                for i, h in enumerate(master_headers)
-                if "UI" in h
-                or "U/I" in h
-                or "UA" in h
-                or "UNIT" in h
-                or "หน่วย" in h
-            ),
-            -1,
-        )
-        idx_price = next(
-            (i for i, h in enumerate(master_headers) if "ราคา" in h), -1
-        )
-        idx_remark = next(
-            (
-                i
-                for i, h in enumerate(master_headers)
-                if "หมายเหตุ" in h or "REMARK" in h
-            ),
-            -1,
+    if template_source_mode == "online":
+      log_func("⏳ กำลังดาวน์โหลด Template Word จาก OneDrive...")
+      open(path_letter, "wb").write(
+          requests.get(target_letter_url, allow_redirects=True).content
+      )
+      open(path_memo, "wb").write(
+          requests.get(target_memo_url, allow_redirects=True).content
+      )
+    else:
+      log_func("📁 กำลังดึงไฟล์แม่แบบจากภายในเครื่อง...")
+      if not os.path.exists(path_letter) or not os.path.exists(path_memo):
+        raise FileNotFoundError(
+            f"ไม่พบไฟล์แม่แบบ {local_letter_file} หรือ {local_memo_file} ในเครื่อง"
         )
 
-        valid_parts = []
-        for i in range(4, len(master_data)):
-            row = master_data[i]
-            if len(row) <= max(idx_item, idx_pn, idx_name):
-                continue
-            pn_val = row[idx_pn].strip() if idx_pn != -1 and len(row) > idx_pn else ""
-            name_val = (
-                row[idx_name].strip()
-                if idx_name != -1 and len(row) > idx_name
-                else ""
-            )
-            if not row[idx_item] and not pn_val and not name_val:
-                break
-            if "หมายเหตุ" in str(name_val) or "หมายเหตุ" in str(row[idx_item]):
-                break
+    if "BELL-412EP" in upper_id or "412EP" in upper_id:
+      raw_model = "BELL-412EP"
+    else:
+      parts = unique_id.split("-")
+      raw_model = parts[1].strip() if len(parts) >= 3 else unique_id
 
-            if pn_val or name_val:
-                price_val = (
-                    row[idx_price].strip().upper()
-                    if idx_price != -1 and len(row) > idx_price
-                    else ""
-                )
-                remark_val = (
-                    row[idx_remark].strip().upper()
-                    if idx_remark != -1 and len(row) > idx_remark
-                    else ""
-                )
+    full_model = FULL_HELICOPTER_NAMES.get(raw_model, raw_model).strip()
+    short_model = SHORT_HELICOPTER_NAMES.get(raw_model, raw_model).strip()
+    contract_no = HELICOPTER_CONTRACT_MAP.get(raw_model, "-").strip()
 
-                is_explicit_no_bid = (
-                    "NO BID" in price_val
-                    or "NOBID" in price_val
-                    or price_val == "0"
-                    or "NO BID" in remark_val
-                    or "NOBID" in remark_val
-                    or "ไม่เสนอราคา" in remark_val
-                )
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+    ]
+    gc = gspread.service_account_from_dict(CREDENTIALS_DICT, scopes=scopes)
 
-                if not is_explicit_no_bid:
-                    raw_ua = "EA"
-                    if idx_ua != -1 and len(row) > idx_ua:
-                        cell_text = row[idx_ua].strip().upper()
-                        if cell_text:
-                            raw_ua = cell_text
-                    final_ua = UNIT_MAPPING.get(raw_ua, raw_ua)
+    ss = gc.open_by_key(SPREADSHEET_ID)
+    logs_data = ss.worksheet("PrintLogs").get_all_values()
 
-                    valid_parts.append({
-                        "pn": (
-                            row[idx_pn].strip()
-                            if idx_pn != -1 and len(row) > idx_pn
-                            else "-"
-                        ),
-                        "nsn": (
-                            row[idx_nsn].strip()
-                            if idx_nsn != -1 and len(row) > idx_nsn
-                            else "-"
-                        ),
-                        "sn": (
-                            row[idx_sn].strip()
-                            if idx_sn != -1 and len(row) > idx_sn
-                            else "-"
-                        ),
-                        "name": (
-                            row[idx_name].strip()
-                            if idx_name != -1 and len(row) > idx_name
-                            else "-"
-                        ),
-                        "qty": (
-                            row[idx_qty].strip()
-                            if idx_qty != -1 and len(row) > idx_qty
-                            else "1"
-                        ),
-                        "ua": final_ua,
-                    })
+    target_sheet_name = ""
+    for i in range(len(logs_data) - 1, 0, -1):
+      if len(logs_data[i]) > 1 and logs_data[i][1].strip().upper() == upper_id:
+        if len(logs_data[i]) > 3:
+          target_sheet_name = logs_data[i][3].strip()
+          break
 
-        if not valid_parts:
-            valid_parts.append({
-                "pn": "-",
-                "nsn": "-",
-                "sn": "-",
-                "name": f"พัสดุตามใบแจ้ง {unique_id}",
-                "qty": "1",
-                "ua": "รายการ",
-            })
+    if not target_sheet_name:
+      raise ValueError(f"ไม่พบประวัติรหัส {unique_id} ในชีต PrintLogs")
 
-        formatted_parts = [
-            {"itemNoThai": to_thai_num(i + 1), **item}
-            for i, item in enumerate(valid_parts)
-        ]
-        total_count = len(formatted_parts)
-        item_count_thai = to_thai_num(total_count)
+    master_data = (
+        gc.open_by_key(UPLOADEDFILES2_ID)
+        .worksheet(target_sheet_name)
+        .get_all_values()
+    )
+    if len(master_data) <= 3:
+      raise ValueError("ข้อมูลพัสดุในชีตน้อยเกินไป (ไม่พบหัวตาราง)")
 
-        if total_count == 1:
-            p = formatted_parts[0]
-            clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
-            code_ref = f"S/N {p['sn']}" if is_repair_job else f"NSN {p['nsn']}"
-            part_details_letter = (
-                f"คือ {clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
-                f" {p['ua']}"
-            )
-            part_details_memo = part_details_letter
-        elif 2 <= total_count <= 3:
-            list_letter, list_memo = [], []
-            for index, p in enumerate(formatted_parts):
-                clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
-                code_ref = f"S/N {p['sn']}" if is_repair_job else f"NSN {p['nsn']}"
-                sub_item_thai = to_thai_num(index + 1)
+    master_headers = [str(h).upper().strip() for h in master_data[3]]
+    idx_item = next(
+        (
+            i
+            for i, h in enumerate(master_headers)
+            if "ลำดับ" in h or "ITEM" in h or "NO" in h
+        ),
+        0,
+    )
+    idx_pn = next(
+        (i for i, h in enumerate(master_headers) if "P/N" in h or "PN" in h), -1
+    )
+    idx_nsn = next(
+        (i for i, h in enumerate(master_headers) if "NSN" in h), -1
+    )
+    idx_sn = next(
+        (i for i, h in enumerate(master_headers) if "S/N" in h or "SN" in h), -1
+    )
+    idx_name = next(
+        (
+            i
+            for i, h in enumerate(master_headers)
+            if "NAME" in h or "DESCRIPTION" in h or "รายการ" in h
+        ),
+        -1,
+    )
+    idx_qty = next(
+        (
+            i
+            for i, h in enumerate(master_headers)
+            if "QTY" in h or "QUANTITY" in h
+        ),
+        -1,
+    )
+    idx_ua = next(
+        (
+            i
+            for i, h in enumerate(master_headers)
+            if "UI" in h
+            or "U/I" in h
+            or "UA" in h
+            or "UNIT" in h
+            or "หน่วย" in h
+        ),
+        -1,
+    )
+    idx_price = next(
+        (i for i, h in enumerate(master_headers) if "ราคา" in h), -1
+    )
+    idx_remark = next(
+        (
+            i
+            for i, h in enumerate(master_headers)
+            if "หมายเหตุ" in h or "REMARK" in h
+        ),
+        -1,
+    )
 
-                # 📌 หนังสือภายนอก: กลับมาใช้ลอจิกเดิมของคุณ 100% ไม่ยุ่งกับ \t แล้วครับ
-                str_letter = (
-                    f"\n---------------{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
-                    f" {code_ref} จำนวน {p['qty']} {p['ua']}"
-                )
-                list_letter.append(
-                    str_letter.replace("---------------", "             ")
-                )
-                
-                # 📌 บันทึกข้อความ: ระยะห่าง 1 บรรทัด (เอา \n ออก) และล็อก 28 เคาะ (ขยับเข้า 2.8) 
-                list_memo.append(
-                    f"                            ๑.{sub_item_thai}\u200b"
-                    f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
-                    f" {p['ua']}"
-                )
+    valid_parts = []
+    for i in range(4, len(master_data)):
+      row = master_data[i]
+      if len(row) <= max(idx_item, idx_pn, idx_name):
+        continue
+      pn_val = row[idx_pn].strip() if idx_pn != -1 and len(row) > idx_pn else ""
+      name_val = (
+          row[idx_name].strip()
+          if idx_name != -1 and len(row) > idx_name
+          else ""
+      )
+      if not row[idx_item] and not pn_val and not name_val:
+        break
+      if "หมายเหตุ" in str(name_val) or "หมายเหตุ" in str(row[idx_item]):
+        break
 
-            part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
-                "\n", "\t\n"
-            )
-            # 📌 บันทึกข้อความ เชื่อมด้วย \n ธรรมดาเพื่อเว้น 1 บรรทัด
-            part_details_memo = "ดังนี้:\n" + "\n".join(list_memo)
-        else:
-            part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
-            part_details_memo = part_details_letter
-
-        now = datetime.datetime.now()
-        year_thai = now.year + 543
-        short_year_thai = to_thai_num(str(year_thai)[-2:])
-        full_date = f"{THAI_MONTHS_FULL[now.month - 1]} {to_thai_num(year_thai)}"
-        short_date = f"{THAI_MONTHS_SHORT[now.month - 1]}{short_year_thai}"
-
-        doc_letter = DocxTemplate(path_letter)
-        doc_letter.render({
-            "FULL_DATE": full_date,
-            "FULL_MODEL_NAME": full_model,
-            "CONTRACT_MAP_NO": contract_no,
-            "ITEM_COUNT_THAI": item_count_thai,
-            "PART_DETAILS_STRING": part_details_letter,
-        })
-        doc_letter.save(out_letter_path)
-
-        doc_memo = DocxTemplate(path_memo)
-        doc_memo.render({
-            "FULL_DATE": full_date,
-            "SHORT_DATE": short_date,
-            "SHORT_MODEL_THAI": short_model,
-            "CONTRACT_REF": contract_no,
-            "ITEM_COUNT_THAI": item_count_thai,
-            "PART_DETAILS_STRING": part_details_memo,
-            "UNIQUE_ID": unique_id,
-        })
-        doc_memo.save(out_memo_path)
-
-        # =========================================================================
-        # 🎯 7. จัดย่อหน้า (หนังสือภายนอกไม่ยุ่ง / บันทึกข้อความย่อหน้าเฉพาะบรรทัดแรก)
-        # =========================================================================
-
-        # === จัดการหนังสือภายนอก (Letter - ยึดตาม gen_doc.py 100%) ===
-        doc_l = docx.Document(out_letter_path)
-        for p in doc_l.paragraphs:
-            text = p.text.strip()
-            if (
-                text.startswith("ตามอ้างถึง")
-                or text.startswith("จึงขอให้")
-                or text.startswith("จึงเรียนมา")
-            ):
-                p.paragraph_format.first_line_indent = Pt(45)
-                p.paragraph_format.left_indent = Pt(0)
-                p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-        doc_l.save(out_letter_path)
-
-        # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
-        doc_m = docx.Document(out_memo_path)
-        for p in doc_m.paragraphs:
-            text = p.text.strip()
-
-            if (
-                re.match(r"^[๑-๙]\.\s", text)
-                or text.startswith("จึงเรียนมา")
-                or text.startswith("เพื่อลงชื่อ")
-                or text.startswith("เพื่อโปรด")
-            ):
-                p.paragraph_format.first_line_indent = Pt(66)
-                p.paragraph_format.left_indent = Pt(0)
-                p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-
-            elif re.match(r"^[๑-๙]\.[๑-๙]", text):
-                p.paragraph_format.first_line_indent = Pt(72)
-                p.paragraph_format.left_indent = Pt(0)
-                p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-
-        doc_m.save(out_memo_path)
-
-        log_func(
-            f"\n🎉 สร้างเอกสารเสร็จสมบูรณ์เรียบร้อย!\n 📄 1) {out_letter_path}\n 📄 2) {out_memo_path}\n"
+      if pn_val or name_val:
+        price_val = (
+            row[idx_price].strip().upper()
+            if idx_price != -1 and len(row) > idx_price
+            else ""
         )
-        finish_callback(
-            True,
-            f"สร้างเอกสารสำหรับ {unique_id} ครบทั้ง 2 ฉบับเรียบร้อยแล้ว!",
-            out_letter_path,
-            out_memo_path,
+        remark_val = (
+            row[idx_remark].strip().upper()
+            if idx_remark != -1 and len(row) > idx_remark
+            else ""
         )
 
-    except Exception as e:
-        log_func(f"\n❌ เกิดข้อผิดพลาด: {type(e).__name__} - {e}")
-        finish_callback(False, str(e), None, None)
+        is_explicit_no_bid = (
+            "NO BID" in price_val
+            or "NOBID" in price_val
+            or price_val == "0"
+            or "NO BID" in remark_val
+            or "NOBID" in remark_val
+            or "ไม่เสนอราคา" in remark_val
+        )
+
+        if not is_explicit_no_bid:
+          raw_ua = "EA"
+          if idx_ua != -1 and len(row) > idx_ua:
+            cell_text = row[idx_ua].strip().upper()
+            if cell_text:
+              raw_ua = cell_text
+          final_ua = UNIT_MAPPING.get(raw_ua, raw_ua)
+
+          valid_parts.append({
+              "pn": (
+                  row[idx_pn].strip()
+                  if idx_pn != -1 and len(row) > idx_pn
+                  else "-"
+              ),
+              "nsn": (
+                  row[idx_nsn].strip()
+                  if idx_nsn != -1 and len(row) > idx_nsn
+                  else "-"
+              ),
+              "sn": (
+                  row[idx_sn].strip()
+                  if idx_sn != -1 and len(row) > idx_sn
+                  else "-"
+              ),
+              "name": (
+                  row[idx_name].strip()
+                  if idx_name != -1 and len(row) > idx_name
+                  else "-"
+              ),
+              "qty": (
+                  row[idx_qty].strip()
+                  if idx_qty != -1 and len(row) > idx_qty
+                  else "1"
+              ),
+              "ua": final_ua,
+          })
+
+    if not valid_parts:
+      valid_parts.append({
+          "pn": "-",
+          "nsn": "-",
+          "sn": "-",
+          "name": f"พัสดุตามใบแจ้ง {unique_id}",
+          "qty": "1",
+          "ua": "รายการ",
+      })
+
+    formatted_parts = [
+        {"itemNoThai": to_thai_num(i + 1), **item}
+        for i, item in enumerate(valid_parts)
+    ]
+    total_count = len(formatted_parts)
+    item_count_thai = to_thai_num(total_count)
+
+    if total_count == 1:
+      p = formatted_parts[0]
+      clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
+      code_ref = f"S/N {p['sn']}" if is_repair_job else f"NSN {p['nsn']}"
+      part_details_letter = (
+          f"คือ {clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
+          f" {p['ua']}"
+      )
+      part_details_memo = part_details_letter
+    elif 2 <= total_count <= 3:
+      list_letter, list_memo = [], []
+      for index, p in enumerate(formatted_parts):
+        clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
+        code_ref = f"S/N {p['sn']}" if is_repair_job else f"NSN {p['nsn']}"
+        sub_item_thai = to_thai_num(index + 1)
+
+        str_letter = (
+            f"\n---------------{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
+            f" {code_ref} จำนวน {p['qty']} {p['ua']}"
+        )
+        list_letter.append(
+            str_letter.replace("---------------", "             ")
+        )
+        # 📌 แก้ไขจุดที่ 1-2: ล็อก 28 เคาะตามบรีฟ (เอา \n ด้านหน้าออกเพื่อไม่ให้โดดห่าง)
+        list_memo.append(
+            f"                            ๑.{sub_item_thai}\u200b"
+            f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
+            f" {p['ua']}"
+        )
+
+      part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
+          "\n", "\t\n"
+      )
+      # 📌 แก้ไขจุดที่ 1-2: เชื่อมด้วย \n แล้ว replace เป็น \t\n ตามลอจิกเดิมของคุณ เพื่อป้องกันคำฉีก (E A C H) และเว้นแค่ 1 บรรทัด
+      part_details_memo = ("ดังนี้:\n" + "\n".join(list_memo)).replace("\n", "\t\n")
+    else:
+      part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
+      part_details_memo = part_details_letter
+
+    now = datetime.datetime.now()
+    year_thai = now.year + 543
+    short_year_thai = to_thai_num(str(year_thai)[-2:])
+    full_date = f"{THAI_MONTHS_FULL[now.month - 1]} {to_thai_num(year_thai)}"
+    short_date = f"{THAI_MONTHS_SHORT[now.month - 1]}{short_year_thai}"
+
+    doc_letter = DocxTemplate(path_letter)
+    doc_letter.render({
+        "FULL_DATE": full_date,
+        "FULL_MODEL_NAME": full_model,
+        "CONTRACT_MAP_NO": contract_no,
+        "ITEM_COUNT_THAI": item_count_thai,
+        "PART_DETAILS_STRING": part_details_letter,
+    })
+    doc_letter.save(out_letter_path)
+
+    doc_memo = DocxTemplate(path_memo)
+    doc_memo.render({
+        "FULL_DATE": full_date,
+        "SHORT_DATE": short_date,
+        "SHORT_MODEL_THAI": short_model,
+        "CONTRACT_REF": contract_no,
+        "ITEM_COUNT_THAI": item_count_thai,
+        "PART_DETAILS_STRING": part_details_memo,
+        "UNIQUE_ID": unique_id,
+    })
+    doc_memo.save(out_memo_path)
+
+    # =========================================================================
+    # 🎯 7. จัดย่อหน้า (หนังสือภายนอกไม่ยุ่ง / บันทึกข้อความย่อหน้าเฉพาะบรรทัดแรก)
+    # =========================================================================
+
+    # === จัดการหนังสือภายนอก (Letter - ยึดตาม gen_doc.py 100%) ===
+    doc_l = docx.Document(out_letter_path)
+    for p in doc_l.paragraphs:
+      text = p.text.strip()
+      if (
+          text.startswith("ตามอ้างถึง")
+          or text.startswith("จึงขอให้")
+          or text.startswith("จึงเรียนมา")
+      ):
+        p.paragraph_format.first_line_indent = Pt(45)
+        p.paragraph_format.left_indent = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+    doc_l.save(out_letter_path)
+
+    # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
+    doc_m = docx.Document(out_memo_path)
+    for p in doc_m.paragraphs:
+      text = p.text.strip()
+
+      if (
+          re.match(r"^[๑-๙]\.\s", text)
+          or text.startswith("จึงเรียนมา")
+          or text.startswith("เพื่อลงชื่อ")
+          or text.startswith("เพื่อโปรด")
+      ):
+        p.paragraph_format.first_line_indent = Pt(66)
+        p.paragraph_format.left_indent = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+
+      elif re.match(r"^[๑-๙]\.[๑-๙]", text):
+        p.paragraph_format.first_line_indent = Pt(72)
+        p.paragraph_format.left_indent = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+
+    doc_m.save(out_memo_path)
+
+    log_func(
+        "\n🎉 สร้างเอกสารเสร็จสมบูรณ์เรียบร้อย!\n 📄 1) {out_letter_path}\n 📄 2)"
+        f" {out_memo_path}\n"
+    )
+    finish_callback(
+        True,
+        f"สร้างเอกสารสำหรับ {unique_id} ครบทั้ง 2 ฉบับเรียบร้อยแล้ว!",
+        out_letter_path,
+        out_memo_path,
+    )
+
+  except Exception as e:
+    log_func(f"\n❌ เกิดข้อผิดพลาด: {type(e).__name__} - {e}")
+    finish_callback(False, str(e), None, None)
 
 
 # =========================================================================
@@ -694,16 +695,16 @@ def generate_documents_process(
 # ดึงข้อมูลรหัส LP จาก Google Sheet พร้อม Caching
 @st.cache_data(ttl=60)
 def fetch_lps():
-    scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive",
-    ]
-    gc = gspread.service_account_from_dict(CREDENTIALS_DICT, scopes=scopes)
-    ss = gc.open_by_key(SPREADSHEET_ID)
-    ws = ss.worksheet("PrintLogs")
-    data = ws.get_all_values()
-    lps = [row[1].strip() for row in data[1:] if len(row) > 1 and row[1].strip()]
-    return list(dict.fromkeys(reversed(lps)))[:30]
+  scopes = [
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/drive",
+  ]
+  gc = gspread.service_account_from_dict(CREDENTIALS_DICT, scopes=scopes)
+  ss = gc.open_by_key(SPREADSHEET_ID)
+  ws = ss.worksheet("PrintLogs")
+  data = ws.get_all_values()
+  lps = [row[1].strip() for row in data[1:] if len(row) > 1 and row[1].strip()]
+  return list(dict.fromkeys(reversed(lps)))[:30]
 
 
 # 1. การ์ดตั้งค่าตัวเลือกสร้างเอกสาร
@@ -726,16 +727,16 @@ template_mode = st.radio(
 )
 
 try:
-    lp_options = fetch_lps()
-    selected_lp = st.selectbox("📌 เลือกรหัส LP หรือระบุรหัสเอกสาร:", lp_options)
+  lp_options = fetch_lps()
+  selected_lp = st.selectbox("📌 เลือกรหัส LP หรือระบุรหัสเอกสาร:", lp_options)
 except Exception as e:
-    st.error(f"ไม่สามารถเชื่อมต่อ Google Sheet ได้: {e}")
-    selected_lp = st.text_input("กรอกรหัส LP เอง:")
+  st.error(f"ไม่สามารถเชื่อมต่อ Google Sheet ได้: {e}")
+  selected_lp = st.text_input("กรอกรหัส LP เอง:")
 
 st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
+# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน (แก้ไขจุดที่ 4)
 # =========================================================================
 SECRET_PASSWORD = "ASD" 
 
@@ -744,55 +745,55 @@ doc_password = st.text_input(
 )
 
 if st.button("🚀 เริ่มสร้างเอกสาร Word", type="primary"):
-    if not selected_lp:
-        st.warning("กรุณาเลือกรหัส LP ก่อนครับ")
-    elif doc_password != SECRET_PASSWORD:
-        st.error("❌ รหัสผ่านไม่ถูกต้อง! ไม่ได้รับอนุญาตให้สร้างเอกสารราชการฉบับนี้")
-    else:
-        log_area = st.empty()
-        logs_list = []
+  if not selected_lp:
+    st.warning("กรุณาเลือกรหัส LP ก่อนครับ")
+  elif doc_password != SECRET_PASSWORD:
+    st.error("❌ รหัสผ่านไม่ถูกต้อง! ไม่ได้รับอนุญาตให้สร้างเอกสารราชการฉบับนี้")
+  else:
+    log_area = st.empty()
+    logs_list = []
 
-        def web_log(text):
-            logs_list.append(text)
-            log_area.code("\n".join(logs_list), language="bash")
+    def web_log(text):
+      logs_list.append(text)
+      log_area.code("\n".join(logs_list), language="bash")
 
-        def web_finish(success, message, letter_p, memo_p):
-            if success:
-                st.success(f"✅ {message}")
-                col1, col2 = st.columns(2)
-                if letter_p and os.path.exists(letter_p):
-                    with col1:
-                        with open(letter_p, "rb") as f:
-                            st.download_button(
-                                label="📥 โหลด หนังสือภายนอก",
-                                data=f,
-                                file_name=os.path.basename(letter_p),
-                                mime=(
-                                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                                ),
-                            )
-                if memo_p and os.path.exists(memo_p):
-                    with col2:
-                        with open(memo_p, "rb") as f:
-                            st.download_button(
-                                label="📥 โหลด บันทึกข้อความ",
-                                data=f,
-                                file_name=os.path.basename(memo_p),
-                                mime=(
-                                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                                ),
-                            )
-            else:
-                st.error(f"❌ เกิดข้อผิดพลาด: {message}")
+    def web_finish(success, message, letter_p, memo_p):
+      if success:
+        st.success(f"✅ {message}")
+        col1, col2 = st.columns(2)
+        if letter_p and os.path.exists(letter_p):
+          with col1:
+            with open(letter_p, "rb") as f:
+              st.download_button(
+                  label="📥 โหลด หนังสือภายนอก",
+                  data=f,
+                  file_name=os.path.basename(letter_p),
+                  mime=(
+                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  ),
+              )
+        if memo_p and os.path.exists(memo_p):
+          with col2:
+            with open(memo_p, "rb") as f:
+              st.download_button(
+                  label="📥 โหลด บันทึกข้อความ",
+                  data=f,
+                  file_name=os.path.basename(memo_p),
+                  mime=(
+                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  ),
+              )
+      else:
+        st.error(f"❌ เกิดข้อผิดพลาด: {message}")
 
-        clean_lp = selected_lp.replace(" (เคยสร้างแล้ว)", "")
-        with st.spinner("กำลังประมวลผลสร้างเอกสาร..."):
-            generate_documents_process(
-                clean_lp, template_mode, web_log, web_finish
-            )
+    clean_lp = selected_lp.replace(" (เคยสร้างแล้ว)", "")
+    with st.spinner("กำลังประมวลผลสร้างเอกสาร..."):
+      generate_documents_process(
+          clean_lp, template_mode, web_log, web_finish
+      )
 
 # =========================================================================
-# 📌 FOOTER SECTION 
+# 📌 FOOTER SECTION (คณะผู้จัดทำ & ผู้ดูแลระบบ ถอดแบบต้นฉบับ 100%)
 # =========================================================================
 st.markdown("---")
 st.markdown(
@@ -820,7 +821,9 @@ st.markdown(
 <br><small style="color: #757575;">(หน.มว.แจ้งความต้องการต่างประเทศ ฝจก.ผคค.กพอ.ชอ.)</small>
 </div>
 </div>
+
 <div class="dev-card">
+<!-- 📌 แก้ไขจุดที่ 3: ปรับขนาดตัวอักษรผู้พัฒนาเป็น 0.94rem -->
 <div style="font-size: 0.94rem; color: #37474f;">
 <span class="material-icons" style="vertical-align: middle; color: #1e88e5; font-size: 1.2rem;">code</span>
 ผู้พัฒนาและผู้ดูแลระบบ: <strong>ธรรศ วรวัฒนานุกูล</strong>
