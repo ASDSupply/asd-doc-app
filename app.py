@@ -98,7 +98,7 @@ st.markdown(
             color: #1b5e20 !important;
         }
 
-        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ไขเป็นชิดซ้ายตามบรีฟ) */
+        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ */
         .custom-footer {
             font-family: 'Sarabun', sans-serif;
             text-align: left;
@@ -566,6 +566,7 @@ def generate_documents_process(
     total_count = len(formatted_parts)
     item_count_thai = to_thai_num(total_count)
 
+    # 📌 ใช้ Logic ตัวแปรดั้งเดิมของคุณทั้งหมด 100% 
     if total_count == 1:
       p = formatted_parts[0]
       clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -595,14 +596,10 @@ def generate_documents_process(
             f" {p['ua']}"
         )
 
-      # 📌 [แก้จุดที่ 1] สร้างตัวแปรดั้งเดิมของคุณ 100% แต่เปลี่ยน \n เฉพาะจุดแรกเป็น \a
-      # เพื่อแยกย่อหน้าให้ 1.1 ห่าง 6 PT ได้ โดยที่ 1.2 ยังติดกัน 0 PT เหมือนเดิม
-      raw_letter = "".join(list_letter)
-      raw_letter = raw_letter.replace("\n", "\a", 1) 
-      part_details_letter = ("ดังนี้:" + raw_letter).replace("\n", "\t\n")
-
-      raw_memo = "\n".join(list_memo)
-      part_details_memo = ("ดังนี้:\a" + raw_memo).replace("\n", "\t\n")
+      part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
+          "\n", "\t\n"
+      )
+      part_details_memo = ("ดังนี้:\n" + "\n".join(list_memo)).replace("\n", "\t\n")
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
       part_details_memo = part_details_letter
@@ -636,22 +633,23 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้า (ตาม Logic เดิม + เพิ่มดีดเฉพาะ 1.1 ไม่ให้กระเด็น)
+    # 🎯 7. จัดย่อหน้าและระยะห่าง (บังคับ 0 PT เพื่อให้ 1.1 กับ 1.2 ติดกันสนิท)
     # =========================================================================
-
+    
     # === จัดการหนังสือภายนอก (Letter) ===
     doc_l = docx.Document(out_letter_path)
     for p in doc_l.paragraphs:
       text = p.text.strip()
       
-      # [เพิ่มใหม่] ดีด 6 PT เฉพาะ 1.1 และล้างค่า 72 PT ทิ้ง ให้ใช้การเคาะ Space เดิมของคุณแทน
+      # 📌 บังคับระยะห่างแนวตั้ง: ให้ 1.1 ห่าง 6PT และให้ 1.2 ขึ้นไปชิดกับบรรทัดบน 0PT 
       if text.startswith("๑.๑"):
         p.paragraph_format.space_before = Pt(6)
-        p.paragraph_format.first_line_indent = Pt(0)
-        p.paragraph_format.left_indent = Pt(0)
-        continue
-      
-      # โค้ดดั้งเดิมของคุณ 100%
+        p.paragraph_format.space_after = Pt(0)
+      elif re.match(r"^[๑-๙]\.[๒-๙]", text):
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
+        
+      # โค้ดร่นย่อหน้าของคุณ 100%
       if (
           text.startswith("ตามอ้างถึง")
           or text.startswith("จึงขอให้")
@@ -660,21 +658,23 @@ def generate_documents_process(
         p.paragraph_format.first_line_indent = Pt(45)
         p.paragraph_format.left_indent = Pt(0)
         p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+
     doc_l.save(out_letter_path)
 
     # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
     doc_m = docx.Document(out_memo_path)
     for p in doc_m.paragraphs:
       text = p.text.strip()
-
-      # [เพิ่มใหม่] ดีด 6 PT เฉพาะ 1.1 และล้างค่า 72 PT ทิ้ง ให้ใช้การเคาะ 22 เคาะเดิมของคุณแทน
+      
+      # 📌 บังคับระยะห่างแนวตั้ง: ให้ 1.1 ห่าง 6PT และให้ 1.2 ขึ้นไปชิดกับบรรทัดบน 0PT 
       if text.startswith("๑.๑"):
         p.paragraph_format.space_before = Pt(6)
-        p.paragraph_format.first_line_indent = Pt(0)
-        p.paragraph_format.left_indent = Pt(0)
-        continue
+        p.paragraph_format.space_after = Pt(0)
+      elif re.match(r"^[๑-๙]\.[๒-๙]", text):
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
 
-      # โค้ดดั้งเดิมของคุณ 100%
+      # โค้ดร่นย่อหน้าของคุณ 100%
       if (
           re.match(r"^[๑-๙]\.\s", text)
           or text.startswith("จึงเรียนมา")
@@ -693,34 +693,46 @@ def generate_documents_process(
     doc_m.save(out_memo_path)
 
     # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (ลบทะลวงตาราง สั่งตัดเฉพาะส่วนท้ายออกเด็ดขาด)
+    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (ตัดลายเซ็นสายรายงานออก + แปะ ร่าง พิมพ์ ทาน)
     # =========================================================================
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # [แก้จุดที่ 2] ค้นหาและลบ "เรียน จก.ชอ." แบบตัดทิ้งเรียบไม่ให้เหลือกวนใจ
-    body = doc_copy._body._body
-    delete_mode = False
-    elements_to_remove = []
-
-    for element in body:
-        text_clean = ""
-        if element.tag.endswith('p'):
-            text_clean = re.sub(r'[\s\u200b\.]+', '', docx.text.paragraph.Paragraph(element, doc_copy).text)
-        elif element.tag.endswith('tbl'):
-            tbl_text = "".join(cell.text for row in docx.table.Table(element, doc_copy).rows for cell in row.cells)
-            text_clean = re.sub(r'[\s\u200b\.]+', '', tbl_text)
-        
+    # 1. ค้นหาจุดตัด "เรียนจกชอ" และลบย่อหน้าใน Body ปกติ
+    delete_start_idx = -1
+    for i, p in enumerate(doc_copy.paragraphs):
+        text_clean = re.sub(r'[\s\u200b\.]+', '', p.text)
         if "เรียนจกชอ" in text_clean or "เพื่อลงชื่อ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
-            delete_mode = True
-        
-        if delete_mode:
-            elements_to_remove.append(element)
+            delete_start_idx = i
+            break
+            
+    if delete_start_idx != -1:
+        for p in list(doc_copy.paragraphs)[delete_start_idx:]:
+            p_element = p._element
+            parent = p_element.getparent()
+            if parent is not None:
+                parent.remove(p_element)
+            p._p = p._element = None
 
-    for el in elements_to_remove:
-        el.getparent().remove(el)
+    # 2. ค้นหาและลบในตารางซ่อน ตั้งแต่ "เรียนจกชอ" 
+    for tbl in doc_copy.tables:
+        rows_to_delete = []
+        found_target = False
+        for row in tbl.rows:
+            row_text = "".join(cell.text for cell in row.cells)
+            text_clean = re.sub(r'[\s\u200b\.]+', '', row_text)
+            if "เรียนจกชอ" in text_clean or "เพื่อลงชื่อ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
+                found_target = True
+            if found_target:
+                rows_to_delete.append(row)
+                
+        for row in rows_to_delete:
+            row_element = row._element
+            parent = row_element.getparent()
+            if parent is not None:
+                parent.remove(row_element)
 
-    # เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา)
+    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา)
     for _ in range(6):
         doc_copy.add_paragraph()
 
