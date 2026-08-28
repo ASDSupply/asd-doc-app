@@ -567,6 +567,7 @@ def generate_documents_process(
     total_count = len(formatted_parts)
     item_count_thai = to_thai_num(total_count)
 
+    # 📌 ปรับเงื่อนไขใหม่: ถ้ารายการเท่ากับ 2 ให้แสดงรายการปกติ ถ้า 3 ขึ้นไปให้รวบอ้างอิงเลขเอกสาร
     if total_count == 1:
       p = formatted_parts[0]
       clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -576,7 +577,7 @@ def generate_documents_process(
           f" {p['ua']}"
       )
       part_details_memo = part_details_letter
-    elif 2 <= total_count <= 3:
+    elif total_count == 2:
       list_letter, list_memo = [], []
       for index, p in enumerate(formatted_parts):
         clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -590,7 +591,6 @@ def generate_documents_process(
         list_letter.append(
             str_letter.replace("---------------", "             ")
         )
-        # 📌 แก้ไขจุดที่ 1-2: ล็อก 28 เคาะตามบรีฟ (เอา \n ด้านหน้าออกเพื่อไม่ให้โดดห่าง)
         list_memo.append(
             f"                      ๑.{sub_item_thai}\u200b"
             f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
@@ -600,7 +600,6 @@ def generate_documents_process(
       part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
           "\n", "\t\n"
       )
-      # 📌 แก้ไขจุดที่ 1-2: เชื่อมด้วย \n แล้ว replace เป็น \t\n ตามลอจิกเดิมของคุณ เพื่อป้องกันคำฉีก (E A C H) และเว้นแค่ 1 บรรทัด
       part_details_memo = ("ดังนี้:\n" + "\n".join(list_memo)).replace("\n", "\t\n")
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
@@ -637,22 +636,19 @@ def generate_documents_process(
     # =========================================================================
     # 🎯 7. จัดย่อหน้าและระยะห่าง (หนังสือภายนอก & บันทึกข้อความ) - อัปเดตใหม่
     # =========================================================================
-    list_pattern = re.compile(r"^([๑-๙0-9]+)\.(?:([๑-๙0-9]+))?\s")
-
+    
     # === จัดการหนังสือภายนอก (Letter) ===
     doc_l = docx.Document(out_letter_path)
-    prev_was_list_l = False
-    prev_was_sub_l = False
 
     for p in doc_l.paragraphs:
         text = p.text.strip()
         if not text:
             continue
             
-        # 📌 ล็อกตราครุฑและโครงสร้าง Template ไม่ให้เด้ง: ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลักเท่านั้น
+        # 📌 ล็อกตราครุฑไม่ให้เด้ง: ปรับ 0.90 เฉพาะเนื้อหาหลักเท่านั้น ข้ามการปรับบรรทัดหัวเอกสาร
         is_body_text = False
         if (
-            list_pattern.match(text) or
+            re.match(r"^[๑-๙0-9]+\.", text) or
             text.startswith("ตามอ้างถึง") or
             text.startswith("จึงขอให้") or
             text.startswith("จึงเรียนมา") or
@@ -665,26 +661,19 @@ def generate_documents_process(
         if is_body_text:
             p.paragraph_format.line_spacing = 0.90
             
-        match = list_pattern.match(text)
-        if match:
-            is_sub = match.group(2) is not None
-            if not prev_was_list_l:
-                p.paragraph_format.space_before = Pt(6) # 📌 เริ่มรายการใหม่ ดีดออก 6 PT 
-            else:
-                if not is_sub and prev_was_sub_l:
-                    p.paragraph_format.space_before = Pt(6) # 📌 จบข้อย่อย(1.2) กลับมาขึ้นข้อหลัก(2.) ดีดออก 6 PT
-                else:
-                    p.paragraph_format.space_before = Pt(0)
-            
+        # 📌 ดีดระยะห่าง 6 PT อย่างแม่นยำเฉพาะหัวข้อหลัก (ข้อ 1, ข้อ 2, จึงเรียนมา ฯลฯ)
+        if (
+            re.match(r"^[๑-๙]\.\s", text) or 
+            text.startswith("ตามอ้างถึง") or 
+            text.startswith("จึงขอให้") or 
+            text.startswith("จึงเรียนมา")
+        ):
+            p.paragraph_format.space_before = Pt(6)
             p.paragraph_format.space_after = Pt(0)
-            prev_was_list_l = True
-            prev_was_sub_l = is_sub
         else:
-            if prev_was_list_l:
-                p.paragraph_format.space_before = Pt(6) # 📌 จบกลุ่มรายการ กลับมาที่ข้อความปกติ ดีดออก 6 PT
-            prev_was_list_l = False
-            prev_was_sub_l = False
+            p.paragraph_format.space_after = Pt(0)
 
+        # 📌 จัดย่อหน้า (Indent)
         if (
             text.startswith("ตามอ้างถึง")
             or text.startswith("จึงขอให้")
@@ -698,18 +687,16 @@ def generate_documents_process(
 
     # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
     doc_m = docx.Document(out_memo_path)
-    prev_was_list_m = False
-    prev_was_sub_m = False
 
     for p in doc_m.paragraphs:
         text = p.text.strip()
         if not text:
             continue
             
-        # 📌 ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลัก
+        # 📌 ปรับ 0.90 เฉพาะส่วนเนื้อหา ล็อกหัวกระดาษไว้
         is_body_m = False
         if (
-            list_pattern.match(text) or
+            re.match(r"^[๑-๙0-9]+\.", text) or
             text.startswith("จึงเรียนมา") or
             text.startswith("เพื่อลงชื่อ") or
             text.startswith("เพื่อโปรด") or
@@ -723,26 +710,20 @@ def generate_documents_process(
         if is_body_m:
             p.paragraph_format.line_spacing = 0.90
             
-        match = list_pattern.match(text)
-        if match:
-            is_sub = match.group(2) is not None
-            if not prev_was_list_m:
-                p.paragraph_format.space_before = Pt(6)
-            else:
-                if not is_sub and prev_was_sub_m:
-                    p.paragraph_format.space_before = Pt(6)
-                else:
-                    p.paragraph_format.space_before = Pt(0)
-                    
+        # 📌 ดีดระยะห่าง 6 PT แม่นยำเฉพาะหัวข้อหลัก (ข้อ 1., 2., 3., หรือส่วนลงท้าย)
+        if (
+            re.match(r"^[๑-๙]\.\s", text) or 
+            text.startswith("จึงเรียนมา") or 
+            text.startswith("เพื่อลงชื่อ") or 
+            text.startswith("เพื่อโปรด") or 
+            text.startswith("ตามอ้างถึง")
+        ):
+            p.paragraph_format.space_before = Pt(6)
             p.paragraph_format.space_after = Pt(0)
-            prev_was_list_m = True
-            prev_was_sub_m = is_sub
         else:
-            if prev_was_list_m:
-                p.paragraph_format.space_before = Pt(6)
-            prev_was_list_m = False
-            prev_was_sub_m = False
+            p.paragraph_format.space_after = Pt(0)
 
+        # 📌 จัดย่อหน้า (Indent)
         if (
             re.match(r"^[๑-๙]\.\s", text)
             or text.startswith("จึงเรียนมา")
@@ -761,30 +742,30 @@ def generate_documents_process(
     doc_m.save(out_memo_path)
 
     # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (ตัดลายเซ็นสายรายงานออก + แปะ ร่าง พิมพ์ ทาน)
+    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (หั่นลายเซ็นเด็ดขาด + แปะ ร่าง พิมพ์ ทาน)
     # =========================================================================
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # 1. ค้นหาจุดตัด (หาคำว่า "หน.ผคค.กพอ.ชอ.") เพื่อเริ่มลบหลังจากบรรทัดนี้ลงไป
+    # 1. ค้นหาจุดตัด (หาคำว่า "หน.ผคค.กพอ.ชอ.")
     delete_start_idx = -1
     for i, p in enumerate(doc_copy.paragraphs):
         text_no_space = p.text.replace(" ", "").replace("\u200b", "")
-        # ถ้าเจอคำนี้ จะเก็บรหัสของ "บรรทัดถัดไป" (i + 1) ไว้เป็นจุดเริ่มต้นการหั่นทิ้ง (รักษาส่วนนี้ไว้)
+        # ถ้าเจอคำนี้ ให้บันทึกบรรทัดถัดไปไว้เป็นจุดเริ่มต้นการหั่น (เพื่อรักษายศด้านบนไว้)
         if "หน.ผคค.กพอ.ชอ." in text_no_space:
             delete_start_idx = i + 1 
             break
 
-    # 2. หั่นย่อหน้าตั้งแต่บรรทัดใต้ "หน.ผคค.กพอ.ชอ." ทิ้งทั้งหมดจนจบเอกสาร
+    # 2. หั่นทิ้งแบบถอนรากถอนโคน ตั้งแต่ใต้คำว่า "หน.ผคค.กพอ.ชอ." ลงไปจนจบเอกสาร
     if delete_start_idx != -1 and delete_start_idx < len(doc_copy.paragraphs):
-        paragraphs = doc_copy.paragraphs
-        for p in paragraphs[delete_start_idx:]:
+        # 📌 ใช้ list() ครอบป้องกันบั๊กการกระโดดข้ามบรรทัดระหว่างที่ลบออก
+        for p in list(doc_copy.paragraphs)[delete_start_idx:]:
             p_element = p._element
             p_element.getparent().remove(p_element)
             p._element, p._p = None, None
 
-    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวาล่าง)
-    for _ in range(6):  # 📌 เคาะบรรทัดว่างประมาณ 6 บรรทัดเพื่อดันข้อความให้ตกไปอยู่ขวาล่างสุด
+    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบชิดขวาล่างสุด
+    for _ in range(6):  # 📌 เคาะบรรทัดว่าง 6 ครั้งเพื่อดันข้อความให้ไปอยู่ล่างๆ
         doc_copy.add_paragraph() 
 
     footer_texts = [
