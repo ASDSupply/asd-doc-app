@@ -646,21 +646,33 @@ def generate_documents_process(
 
     for p in doc_l.paragraphs:
         text = p.text.strip()
-        
-        # 📌 ป้องกันตาครุฑเด้ง: ถ้าเป็นบรรทัดว่าง ให้ข้ามไปเลย ไม่ต้องบีบ 0.88
         if not text:
             continue
             
-        p.paragraph_format.line_spacing = 0.88 # บีบเฉพาะบรรทัดที่มีตัวอักษร
+        # 📌 ล็อกตราครุฑและโครงสร้าง Template ไม่ให้เด้ง: ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลักเท่านั้น
+        is_body_text = False
+        if (
+            list_pattern.match(text) or
+            text.startswith("ตามอ้างถึง") or
+            text.startswith("จึงขอให้") or
+            text.startswith("จึงเรียนมา") or
+            text.startswith("ด้วย") or
+            text.startswith("รายละเอียดตามใบแจ้ง") or
+            "ดังนี้:" in text
+        ):
+            is_body_text = True
+
+        if is_body_text:
+            p.paragraph_format.line_spacing = 0.90
             
         match = list_pattern.match(text)
         if match:
             is_sub = match.group(2) is not None
             if not prev_was_list_l:
-                p.paragraph_format.space_before = Pt(6)
+                p.paragraph_format.space_before = Pt(6) # 📌 เริ่มรายการใหม่ ดีดออก 6 PT 
             else:
                 if not is_sub and prev_was_sub_l:
-                    p.paragraph_format.space_before = Pt(6)
+                    p.paragraph_format.space_before = Pt(6) # 📌 จบข้อย่อย(1.2) กลับมาขึ้นข้อหลัก(2.) ดีดออก 6 PT
                 else:
                     p.paragraph_format.space_before = Pt(0)
             
@@ -669,7 +681,7 @@ def generate_documents_process(
             prev_was_sub_l = is_sub
         else:
             if prev_was_list_l:
-                p.paragraph_format.space_before = Pt(6)
+                p.paragraph_format.space_before = Pt(6) # 📌 จบกลุ่มรายการ กลับมาที่ข้อความปกติ ดีดออก 6 PT
             prev_was_list_l = False
             prev_was_sub_l = False
 
@@ -691,12 +703,25 @@ def generate_documents_process(
 
     for p in doc_m.paragraphs:
         text = p.text.strip()
-        
-        # 📌 ป้องกันรูปแบบเด้ง: ข้ามบรรทัดว่าง
         if not text:
             continue
             
-        p.paragraph_format.line_spacing = 0.88
+        # 📌 ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลัก
+        is_body_m = False
+        if (
+            list_pattern.match(text) or
+            text.startswith("จึงเรียนมา") or
+            text.startswith("เพื่อลงชื่อ") or
+            text.startswith("เพื่อโปรด") or
+            text.startswith("ด้วย") or
+            text.startswith("ตามอ้างถึง") or
+            text.startswith("รายละเอียดตามใบแจ้ง") or
+            "ดังนี้:" in text
+        ):
+            is_body_m = True
+
+        if is_body_m:
+            p.paragraph_format.line_spacing = 0.90
             
         match = list_pattern.match(text)
         if match:
@@ -741,28 +766,27 @@ def generate_documents_process(
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # 1. ค้นหาจุดตัด (หาคำว่า "เรียน จก.ชอ.") เพื่อเริ่มลบตั้งแต่บรรทัดนี้
+    # 1. ค้นหาจุดตัด (หาคำว่า "หน.ผคค.กพอ.ชอ.") เพื่อเริ่มลบหลังจากบรรทัดนี้ลงไป
     delete_start_idx = -1
     for i, p in enumerate(doc_copy.paragraphs):
         text_no_space = p.text.replace(" ", "").replace("\u200b", "")
-        # ถ้าเจอ "เรียนจก.ชอ." จะเก็บ index ไว้เป็นจุดเริ่มหั่น
-        if "เรียนจก.ชอ." in text_no_space or "-ลงชื่อให้แล้ว" in text_no_space:
-            delete_start_idx = i
+        # ถ้าเจอคำนี้ จะเก็บรหัสของ "บรรทัดถัดไป" (i + 1) ไว้เป็นจุดเริ่มต้นการหั่นทิ้ง (รักษาส่วนนี้ไว้)
+        if "หน.ผคค.กพอ.ชอ." in text_no_space:
+            delete_start_idx = i + 1 
             break
 
-    # 2. หั่นย่อหน้าตั้งแต่จุดที่เจอ "เรียน จก.ชอ." ทิ้งทั้งหมดจนจบเอกสาร
-    if delete_start_idx != -1:
+    # 2. หั่นย่อหน้าตั้งแต่บรรทัดใต้ "หน.ผคค.กพอ.ชอ." ทิ้งทั้งหมดจนจบเอกสาร
+    if delete_start_idx != -1 and delete_start_idx < len(doc_copy.paragraphs):
         paragraphs = doc_copy.paragraphs
         for p in paragraphs[delete_start_idx:]:
             p_element = p._element
             p_element.getparent().remove(p_element)
             p._element, p._p = None, None
 
-    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา) ไว้ท้ายเอกสาร
-    doc_copy.add_paragraph() 
-    doc_copy.add_paragraph()
+    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวาล่าง)
+    for _ in range(6):  # 📌 เคาะบรรทัดว่างประมาณ 6 บรรทัดเพื่อดันข้อความให้ตกไปอยู่ขวาล่างสุด
+        doc_copy.add_paragraph() 
 
-    # 📌 ปรับลดยาวจุดไข่ปลาตรง "พิมพ์/ทาน" ให้ขยับมาพอดีกับบรรทัดอื่น และแก้ ยศ เป็น ร.ต. / จ.ต. / ร.ท.
     footer_texts = [
         f"ร.ต.......................................................ร่าง..................................{short_date}",
         f"จ.ต...................................................พิมพ์/ทาน............................{short_date}",
@@ -771,7 +795,7 @@ def generate_documents_process(
 
     for text in footer_texts:
         p_foot = doc_copy.add_paragraph()
-        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT 
+        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT # 📌 ดันไปชิดขวาสุด
         run_foot = p_foot.add_run(text)
         run_foot.font.name = 'TH SarabunPSK'
         run_foot.font.size = Pt(16)
@@ -842,9 +866,9 @@ except Exception as e:
 st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน (แก้ไขจุดที่ 4)
+# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
 # =========================================================================
-SECRET_PASSWORD = "ASD" 
+SECRET_PASSWORD = "36529" 
 
 doc_password = st.text_input(
     "🔒 กรอกรหัสผ่านเพื่ออนุมัติการสร้างเอกสาร:", type="password"
@@ -924,7 +948,6 @@ st.markdown(
 </div>
 
 <div class="dev-card">
-<!-- 📌 แก้ไขจุดที่ 3: ปรับขนาดตัวอักษรผู้พัฒนาเป็น 0.94rem -->
 <div style="font-size: 0.94rem; color: #37474f;">
 <span class="material-icons" style="vertical-align: middle; color: #1e88e5; font-size: 1.2rem;">code</span>
 ผู้พัฒนาและผู้ดูแลระบบ: <strong>ธรรศ วรวัฒนานุกูล</strong>
