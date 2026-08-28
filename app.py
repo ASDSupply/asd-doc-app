@@ -567,7 +567,7 @@ def generate_documents_process(
     total_count = len(formatted_parts)
     item_count_thai = to_thai_num(total_count)
 
-    # 📌 ปรับปรุงกรณี 2 รายการ ให้แยกย่อหน้าและดีดระยะห่าง 6 PT ออกจากข้อความหลัก
+    # 📌 ใช้ \a แยกย่อหน้าออกจากข้อความหลัก เพื่อให้ Word ยอมตัดย่อหน้าออกจากข้อความข้างบน
     if total_count == 1:
       p = formatted_parts[0]
       clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -577,7 +577,7 @@ def generate_documents_process(
           f" {p['ua']}"
       )
       part_details_memo = part_details_letter
-    elif total_count == 2:
+    elif 2 <= total_count <= 3:
       list_letter, list_memo = [], []
       for index, p in enumerate(formatted_parts):
         clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -585,22 +585,18 @@ def generate_documents_process(
         sub_item_thai = to_thai_num(index + 1)
 
         str_letter = (
-            f"\n---------------{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
+            f"\a             {p['itemNoThai']}. {clean_name} P/N {p['pn']}"
             f" {code_ref} จำนวน {p['qty']} {p['ua']}"
         )
-        list_letter.append(
-            str_letter.replace("---------------", "             ")
-        )
+        list_letter.append(str_letter)
         list_memo.append(
-            f"                      ๑.{sub_item_thai}\u200b"
+            f"\a                      ๑.{sub_item_thai}\u200b"
             f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
             f" {p['ua']}"
         )
 
-      part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
-          "\n", "\t\n"
-      )
-      part_details_memo = ("ดังนี้:\n" + "\n".join(list_memo)).replace("\n", "\t\n")
+      part_details_letter = "ดังนี้:" + "".join(list_letter)
+      part_details_memo = "ดังนี้:" + "".join(list_memo)
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
       part_details_memo = part_details_letter
@@ -641,7 +637,7 @@ def generate_documents_process(
     doc_l = docx.Document(out_letter_path)
     for p in doc_l.paragraphs:
       text = p.text.strip()
-      if text.startswith("๑.๑"):
+      if text.startswith("๑.") or text.startswith("๑.๑"):
         p.paragraph_format.space_before = Pt(6)  # ดีดข้อย่อยแรกออกจากข้อความ 6 PT
       
       if (
@@ -679,24 +675,60 @@ def generate_documents_process(
     doc_m.save(out_memo_path)
 
     # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (เพิ่มใหม่ตามที่ตกลงกัน)
+    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (ตัดส่วนล่างตั้งแต่ เรียน จก.ชอ. ออกเด็ดขาด)
     # =========================================================================
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # สร้างบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา) ไว้ท้ายเอกสาร
-    doc_copy.add_paragraph() # เคาะบรรทัดทิ้ง 1 บรรทัด
-    doc_copy.add_paragraph()
+    # 1. ลบย่อหน้าภายนอกปกติ
+    delete_start_idx = -1
+    for i, p in enumerate(doc_copy.paragraphs):
+        text_clean = re.sub(r'[\s\u200b\.]+', '', p.text)
+        if "เรียนจกชอ" in text_clean or "เพื่อลงชื่อ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
+            delete_start_idx = i
+            break
+            
+    if delete_start_idx != -1:
+        for p in list(doc_copy.paragraphs)[delete_start_idx:]:
+            p_element = p._element
+            parent = p_element.getparent()
+            if parent is not None:
+                parent.remove(p_element)
+            p._p = p._element = None
+
+    # 2. ลบส่วนตารางด้านล่างออกทั้งหมด
+    for tbl in doc_copy.tables:
+        rows_to_delete = []
+        found_target = False
+        for row in tbl.rows:
+            row_text = "".join(cell.text for cell in row.cells)
+            text_clean = re.sub(r'[\s\u200b\.]+', '', row_text)
+            
+            if "เรียนจกชอ" in text_clean or "เพื่อลงชื่อ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
+                found_target = True
+                
+            if found_target:
+                rows_to_delete.append(row)
+                
+        for row in rows_to_delete:
+            row_element = row._element
+            parent = row_element.getparent()
+            if parent is not None:
+                parent.remove(row_element)
+
+    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" ไว้ชิดขวาท้ายเอกสาร
+    for _ in range(6):  
+        doc_copy.add_paragraph() 
 
     footer_texts = [
-        f"ร.ต.......................................................ร่าง.......................{short_date}",
-        f"ร.ท.......................................................พิมพ์/ทาน...................{short_date}",
-        f"น.อ......................................................ตรวจ......................{short_date}"
+        f"ร.ต.......................................................ร่าง..................................{short_date}",
+        f"จ.ต...................................................พิมพ์/ทาน............................{short_date}",
+        f"ร.ท......................................................ตรวจ..................................{short_date}"
     ]
 
     for text in footer_texts:
         p_foot = doc_copy.add_paragraph()
-        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT # ดันไปชิดขวาสุด
+        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT 
         run_foot = p_foot.add_run(text)
         run_foot.font.name = 'TH SarabunPSK'
         run_foot.font.size = Pt(16)
@@ -767,7 +799,7 @@ except Exception as e:
 st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน (แก้ไขจุดที่ 4)
+# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
 # =========================================================================
 SECRET_PASSWORD = "ASD" 
 
@@ -849,7 +881,6 @@ st.markdown(
 </div>
 
 <div class="dev-card">
-<!-- 📌 แก้ไขจุดที่ 3: ปรับขนาดตัวอักษรผู้พัฒนาเป็น 0.94rem -->
 <div style="font-size: 0.94rem; color: #37474f;">
 <span class="material-icons" style="vertical-align: middle; color: #1e88e5; font-size: 1.2rem;">code</span>
 ผู้พัฒนาและผู้ดูแลระบบ: <strong>ธรรศ วรวัฒนานุกูล</strong>
