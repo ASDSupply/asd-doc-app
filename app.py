@@ -1,6 +1,8 @@
 import datetime
 import os
 import re
+import io
+import zipfile
 import docx
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
@@ -672,20 +674,45 @@ def generate_documents_process(
 
     doc_m.save(out_memo_path)
 
+    # =========================================================================
+    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (เพิ่มใหม่ตามที่ตกลงกัน)
+    # =========================================================================
+    out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
+    doc_copy = docx.Document(out_memo_path)
+
+    # สร้างบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา) ไว้ท้ายเอกสาร
+    doc_copy.add_paragraph() # เคาะบรรทัดทิ้ง 1 บรรทัด
+    doc_copy.add_paragraph()
+
+    footer_texts = [
+        f"ร.ต.......................................................ร่าง.......................{short_date}",
+        f"ร.ท.......................................................พิมพ์/ทาน...................{short_date}",
+        f"น.อ......................................................ตรวจ......................{short_date}"
+    ]
+
+    for text in footer_texts:
+        p_foot = doc_copy.add_paragraph()
+        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT # ดันไปชิดขวาสุด
+        run_foot = p_foot.add_run(text)
+        run_foot.font.name = 'TH SarabunPSK'
+        run_foot.font.size = Pt(16)
+
+    doc_copy.save(out_copy_path)
+
     log_func(
-        "\n🎉 สร้างเอกสารเสร็จสมบูรณ์เรียบร้อย!\n 📄 1) {out_letter_path}\n 📄 2)"
-        f" {out_memo_path}\n"
+        "\n🎉 สร้างเอกสารเสร็จสมบูรณ์เรียบร้อย!\n 📄 1) หนังสือภายนอก\n 📄 2) บันทึกข้อความ (ต้นฉบับ)\n 📄 3) บันทึกข้อความ (สำเนาคู่ฉบับ)\n"
     )
     finish_callback(
         True,
-        f"สร้างเอกสารสำหรับ {unique_id} ครบทั้ง 2 ฉบับเรียบร้อยแล้ว!",
+        f"สร้างเอกสารสำหรับ {unique_id} ครบทั้ง 3 ฉบับ (บรรจุใน ZIP) เรียบร้อยแล้ว!",
         out_letter_path,
         out_memo_path,
+        out_copy_path
     )
 
   except Exception as e:
     log_func(f"\n❌ เกิดข้อผิดพลาด: {type(e).__name__} - {e}")
-    finish_callback(False, str(e), None, None)
+    finish_callback(False, str(e), None, None, None)
 
 
 # =========================================================================
@@ -757,32 +784,27 @@ if st.button("🚀 เริ่มสร้างเอกสาร Word", type=
       logs_list.append(text)
       log_area.code("\n".join(logs_list), language="bash")
 
-    def web_finish(success, message, letter_p, memo_p):
+    def web_finish(success, message, letter_p, memo_p, copy_p):
       if success:
         st.success(f"✅ {message}")
-        col1, col2 = st.columns(2)
-        if letter_p and os.path.exists(letter_p):
-          with col1:
-            with open(letter_p, "rb") as f:
-              st.download_button(
-                  label="📥 โหลด หนังสือภายนอก",
-                  data=f,
-                  file_name=os.path.basename(letter_p),
-                  mime=(
-                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  ),
-              )
-        if memo_p and os.path.exists(memo_p):
-          with col2:
-            with open(memo_p, "rb") as f:
-              st.download_button(
-                  label="📥 โหลด บันทึกข้อความ",
-                  data=f,
-                  file_name=os.path.basename(memo_p),
-                  mime=(
-                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  ),
-              )
+        
+        # มัดรวมไฟล์ทั้งหมดลง ZIP ในหน่วยความจำเพื่อแก้ปัญหาเว็บรีเฟรช
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+            if letter_p and os.path.exists(letter_p):
+                zip_file.write(letter_p, f"๑_หนังสือภายนอก_{clean_lp}.docx")
+            if memo_p and os.path.exists(memo_p):
+                zip_file.write(memo_p, f"๒_บันทึกข้อความ(ต้นฉบับ)_{clean_lp}.docx")
+            if copy_p and os.path.exists(copy_p):
+                zip_file.write(copy_p, f"๓_บันทึกข้อความ(สำเนา)_{clean_lp}.docx")
+        
+        # ปุ่มดาวน์โหลดไฟล์ ZIP 
+        st.download_button(
+            label="📥 ดาวน์โหลดเอกสารทั้งหมด (ไฟล์ ZIP)",
+            data=zip_buffer.getvalue(),
+            file_name=f"Documents_{clean_lp}.zip",
+            mime="application/zip"
+        )
       else:
         st.error(f"❌ เกิดข้อผิดพลาด: {message}")
 
