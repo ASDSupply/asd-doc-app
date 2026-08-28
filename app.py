@@ -567,7 +567,7 @@ def generate_documents_process(
     total_count = len(formatted_parts)
     item_count_thai = to_thai_num(total_count)
 
-    # 📌 ใช้ \a แยกย่อหน้าออกจากข้อความหลัก เพื่อให้ Word ยอมตัดย่อหน้าออกจากข้อความข้างบน
+    # 📌 ปรับปรุงกรณี 2 รายการ ให้แยกย่อหน้าและดีดระยะห่าง 6 PT ออกจากข้อความหลัก
     if total_count == 1:
       p = formatted_parts[0]
       clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -577,7 +577,7 @@ def generate_documents_process(
           f" {p['ua']}"
       )
       part_details_memo = part_details_letter
-    elif 2 <= total_count <= 3:
+    elif total_count == 2:
       list_letter, list_memo = [], []
       for index, p in enumerate(formatted_parts):
         clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -585,18 +585,22 @@ def generate_documents_process(
         sub_item_thai = to_thai_num(index + 1)
 
         str_letter = (
-            f"\a             {p['itemNoThai']}. {clean_name} P/N {p['pn']}"
+            f"\n---------------{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
             f" {code_ref} จำนวน {p['qty']} {p['ua']}"
         )
-        list_letter.append(str_letter)
+        list_letter.append(
+            str_letter.replace("---------------", "             ")
+        )
         list_memo.append(
-            f"\a                      ๑.{sub_item_thai}\u200b"
+            f"                      ๑.{sub_item_thai}\u200b"
             f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
             f" {p['ua']}"
         )
 
-      part_details_letter = "ดังนี้:" + "".join(list_letter)
-      part_details_memo = "ดังนี้:" + "".join(list_memo)
+      part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
+          "\n", "\t\n"
+      )
+      part_details_memo = ("ดังนี้:\n" + "\n".join(list_memo)).replace("\n", "\t\n")
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
       part_details_memo = part_details_letter
@@ -637,7 +641,7 @@ def generate_documents_process(
     doc_l = docx.Document(out_letter_path)
     for p in doc_l.paragraphs:
       text = p.text.strip()
-      if text.startswith("๑.") or text.startswith("๑.๑"):
+      if text.startswith("๑.๑"):
         p.paragraph_format.space_before = Pt(6)  # ดีดข้อย่อยแรกออกจากข้อความ 6 PT
       
       if (
@@ -675,16 +679,16 @@ def generate_documents_process(
     doc_m.save(out_memo_path)
 
     # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (ตัดส่วนล่างตั้งแต่ เรียน จก.ชอ. ออกเด็ดขาด)
+    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (ลบตั้งแต่ เรียน จก.ชอ. ลงมา)
     # =========================================================================
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # 1. ลบย่อหน้าภายนอกปกติ
+    # 1. ค้นหาจุดตัด "เรียน จก.ชอ." แล้วลบ Paragraph ด้านล่างทิ้ง
     delete_start_idx = -1
     for i, p in enumerate(doc_copy.paragraphs):
-        text_clean = re.sub(r'[\s\u200b\.]+', '', p.text)
-        if "เรียนจกชอ" in text_clean or "เพื่อลงชื่อ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
+        text_clean = p.text.replace(" ", "").replace("\u200b", "").replace(".", "")
+        if "เรียนจกชอ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
             delete_start_idx = i
             break
             
@@ -696,17 +700,15 @@ def generate_documents_process(
                 parent.remove(p_element)
             p._p = p._element = None
 
-    # 2. ลบส่วนตารางด้านล่างออกทั้งหมด
+    # 2. ค้นหาและลบ Table ที่ซ่อน "เรียน จก.ชอ." หรือลายเซ็นอยู่
     for tbl in doc_copy.tables:
         rows_to_delete = []
         found_target = False
         for row in tbl.rows:
             row_text = "".join(cell.text for cell in row.cells)
             text_clean = re.sub(r'[\s\u200b\.]+', '', row_text)
-            
-            if "เรียนจกชอ" in text_clean or "เพื่อลงชื่อ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
+            if "เรียนจกชอ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
                 found_target = True
-                
             if found_target:
                 rows_to_delete.append(row)
                 
@@ -715,8 +717,8 @@ def generate_documents_process(
             parent = row_element.getparent()
             if parent is not None:
                 parent.remove(row_element)
-
-    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" ไว้ชิดขวาท้ายเอกสาร
+                
+    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวาล่าง)
     for _ in range(6):  
         doc_copy.add_paragraph() 
 
@@ -801,7 +803,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 # =========================================================================
 # 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
 # =========================================================================
-SECRET_PASSWORD = "ASD" 
+SECRET_PASSWORD = "36529" 
 
 doc_password = st.text_input(
     "🔒 กรอกรหัสผ่านเพื่ออนุมัติการสร้างเอกสาร:", type="password"
