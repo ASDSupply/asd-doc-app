@@ -576,7 +576,7 @@ def generate_documents_process(
           f" {p['ua']}"
       )
       part_details_memo = part_details_letter
-    elif total_count == 2:
+    elif 2 <= total_count <= 3:
       list_letter, list_memo = [], []
       for index, p in enumerate(formatted_parts):
         clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -596,15 +596,13 @@ def generate_documents_process(
             f" {p['ua']}"
         )
 
-      # 📌 เปลี่ยนเฉพาะ \n ตัวแรกสุดที่คั่นระหว่าง "ดังนี้:" กับ "1.1" ให้เป็น \a (ย่อหน้าใหม่)
-      # ส่วนช่องว่างระหว่าง 1.1 กับ 1.2 ยังคงเชื่อมกันด้วย \n ตามโครงสร้างดั้งเดิม เพื่อให้มันเกาะกันสนิท (0 PT)
+      # 📌 เปลี่ยน \n ตัวแรกให้เป็น \a เพื่อให้ 1.1 ถูกแยกเป็นย่อหน้าใหม่ 
+      # (จะได้สั่งดีด 6 PT เข้าไปได้ โดยไม่กระทบส่วนอื่น)
       joined_letter = "".join(list_letter)
-      joined_letter = joined_letter.replace("\n", "\a", 1) 
-      part_details_letter = ("ดังนี้:" + joined_letter).replace("\n", "\t\n").replace("\a", "\t\a")
+      part_details_letter = ("ดังนี้:" + joined_letter.replace("\n", "\a", 1)).replace("\n", "\t\n")
 
       joined_memo = "\n".join(list_memo)
-      joined_memo = joined_memo.replace("\n", "\a", 1)
-      part_details_memo = ("ดังนี้:\a" + joined_memo).replace("\n", "\t\n").replace("\a", "\t\a")
+      part_details_memo = ("ดังนี้:\a" + joined_memo).replace("\n", "\t\n")
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
       part_details_memo = part_details_letter
@@ -638,7 +636,7 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้า (แก้เฉพาะจุด ๑.๑ ให้ห่างจากข้อความหลัก 6 PT)
+    # 🎯 7. จัดย่อหน้า (ตาม Logic เดิม + เพิ่มดีด 6 PT เฉพาะข้อ 1.1)
     # =========================================================================
 
     # === จัดการหนังสือภายนอก (Letter) ===
@@ -646,11 +644,7 @@ def generate_documents_process(
     for p in doc_l.paragraphs:
       text = p.text.strip()
       
-      # 📌 ดีด 6 PT เข้าไปเฉพาะที่รอยต่อข้อ 1.1 กับข้อ 1 เท่านั้น
-      if text.startswith("๑.๑"):
-        p.paragraph_format.space_before = Pt(6)  
-        p.paragraph_format.space_after = Pt(0)
-      
+      # โค้ดดั้งเดิมของคุณ 100%
       if (
           text.startswith("ตามอ้างถึง")
           or text.startswith("จึงขอให้")
@@ -659,18 +653,20 @@ def generate_documents_process(
         p.paragraph_format.first_line_indent = Pt(45)
         p.paragraph_format.left_indent = Pt(0)
         p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+        
+      # [เพิ่มใหม่] ดีด 6 PT เฉพาะ 1.1 และล้าง 72 PT ทิ้ง เพื่อใช้ 13 เคาะของคุณแทน 
+      if text.startswith("๑.๑"):
+        p.paragraph_format.space_before = Pt(6)
+        p.paragraph_format.first_line_indent = Pt(0)
+        
     doc_l.save(out_letter_path)
 
     # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
     doc_m = docx.Document(out_memo_path)
     for p in doc_m.paragraphs:
       text = p.text.strip()
-      
-      # 📌 ดีด 6 PT เข้าไปเฉพาะที่รอยต่อข้อ 1.1 กับข้อ 1 เท่านั้น
-      if text.startswith("๑.๑"):
-        p.paragraph_format.space_before = Pt(6)  
-        p.paragraph_format.space_after = Pt(0)
 
+      # โค้ดดั้งเดิมของคุณ 100%
       if (
           re.match(r"^[๑-๙]\.\s", text)
           or text.startswith("จึงเรียนมา")
@@ -685,6 +681,11 @@ def generate_documents_process(
         p.paragraph_format.first_line_indent = Pt(72)
         p.paragraph_format.left_indent = Pt(0)
         p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+        
+      # [เพิ่มใหม่] ดีด 6 PT เฉพาะ 1.1 และล้าง 72 PT ทิ้ง เพื่อให้ 22 เคาะของคุณทำงานได้อย่างสมบูรณ์แบบไม่กระเด็นตกขอบ
+      if text.startswith("๑.๑"):
+        p.paragraph_format.space_before = Pt(6)
+        p.paragraph_format.first_line_indent = Pt(0)
 
     doc_m.save(out_memo_path)
 
@@ -694,7 +695,7 @@ def generate_documents_process(
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # 1. ค้นหาและลบย่อหน้าใน Body ปกติ 
+    # 1. ค้นหาและลบย่อหน้าใน Body ปกติ ตั้งแต่ "เรียน จก.ชอ."
     delete_start_idx = -1
     for i, p in enumerate(doc_copy.paragraphs):
         text_clean = re.sub(r'[\s\u200b\.]+', '', p.text)
@@ -710,17 +711,15 @@ def generate_documents_process(
                 parent.remove(p_element)
             p._p = p._element = None
 
-    # 2. ค้นหาและลบในตารางซ่อน
+    # 2. ค้นหาและลบในตารางซ่อน ตั้งแต่ "เรียน จก.ชอ."
     for tbl in doc_copy.tables:
         rows_to_delete = []
         found_target = False
         for row in tbl.rows:
             row_text = "".join(cell.text for cell in row.cells)
             text_clean = re.sub(r'[\s\u200b\.]+', '', row_text)
-            
             if "เรียนจกชอ" in text_clean or "เพื่อลงชื่อ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
                 found_target = True
-                
             if found_target:
                 rows_to_delete.append(row)
                 
@@ -730,7 +729,7 @@ def generate_documents_process(
             if parent is not None:
                 parent.remove(row_element)
 
-    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบชิดขวา
+    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา)
     for _ in range(6):
         doc_copy.add_paragraph()
 
