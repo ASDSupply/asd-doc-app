@@ -261,7 +261,7 @@ HELICOPTER_CONTRACT_MAP = {
     "BELL": "๘/๒๕๖๙ จอ.",
     "BELL-412EP": "๑๘/๒๕๖๙ จอ.",
     "H225M": "๑๓/๒๕๖๙ จอ.",
-    "S70i": "๑๙/๒๕๖๙ จอ.",
+    "S70i": "๑۹/๒๕๖๙ จอ.",
     "H135": "๑๕/๒๕๖๘ จอ.",
     "TEST": "๐๑/๒๕๖๘ จอ.",
     "F16": "๒/๒๕๖๙ จอ.",
@@ -635,42 +635,99 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้า (หนังสือภายนอกไม่ยุ่ง / บันทึกข้อความย่อหน้าเฉพาะบรรทัดแรก)
+    # 🎯 7. จัดย่อหน้าและระยะห่าง (หนังสือภายนอก & บันทึกข้อความ) - อัปเดตใหม่
     # =========================================================================
+    list_pattern = re.compile(r"^([๑-๙0-9]+)\.(?:([๑-๙0-9]+))?\s")
 
-    # === จัดการหนังสือภายนอก (Letter - ยึดตาม gen_doc.py 100%) ===
+    # === จัดการหนังสือภายนอก (Letter) ===
     doc_l = docx.Document(out_letter_path)
+    prev_was_list_l = False
+    prev_was_sub_l = False
+
     for p in doc_l.paragraphs:
-      text = p.text.strip()
-      if (
-          text.startswith("ตามอ้างถึง")
-          or text.startswith("จึงขอให้")
-          or text.startswith("จึงเรียนมา")
-      ):
-        p.paragraph_format.first_line_indent = Pt(45)
-        p.paragraph_format.left_indent = Pt(0)
-        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+        p.paragraph_format.line_spacing = 0.88
+        
+        text = p.text.strip()
+        if not text:
+            continue
+            
+        match = list_pattern.match(text)
+        if match:
+            is_sub = match.group(2) is not None
+            if not prev_was_list_l:
+                p.paragraph_format.space_before = Pt(6)
+            else:
+                if not is_sub and prev_was_sub_l:
+                    p.paragraph_format.space_before = Pt(6)
+                else:
+                    p.paragraph_format.space_before = Pt(0)
+            
+            p.paragraph_format.space_after = Pt(0)
+            prev_was_list_l = True
+            prev_was_sub_l = is_sub
+        else:
+            if prev_was_list_l:
+                p.paragraph_format.space_before = Pt(6)
+            prev_was_list_l = False
+            prev_was_sub_l = False
+
+        if (
+            text.startswith("ตามอ้างถึง")
+            or text.startswith("จึงขอให้")
+            or text.startswith("จึงเรียนมา")
+        ):
+            p.paragraph_format.first_line_indent = Pt(45)
+            p.paragraph_format.left_indent = Pt(0)
+            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+
     doc_l.save(out_letter_path)
 
     # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
     doc_m = docx.Document(out_memo_path)
+    prev_was_list_m = False
+    prev_was_sub_m = False
+
     for p in doc_m.paragraphs:
-      text = p.text.strip()
+        p.paragraph_format.line_spacing = 0.88
+        
+        text = p.text.strip()
+        if not text:
+            continue
+            
+        match = list_pattern.match(text)
+        if match:
+            is_sub = match.group(2) is not None
+            if not prev_was_list_m:
+                p.paragraph_format.space_before = Pt(6)
+            else:
+                if not is_sub and prev_was_sub_m:
+                    p.paragraph_format.space_before = Pt(6)
+                else:
+                    p.paragraph_format.space_before = Pt(0)
+                    
+            p.paragraph_format.space_after = Pt(0)
+            prev_was_list_m = True
+            prev_was_sub_m = is_sub
+        else:
+            if prev_was_list_m:
+                p.paragraph_format.space_before = Pt(6)
+            prev_was_list_m = False
+            prev_was_sub_m = False
 
-      if (
-          re.match(r"^[๑-๙]\.\s", text)
-          or text.startswith("จึงเรียนมา")
-          or text.startswith("เพื่อลงชื่อ")
-          or text.startswith("เพื่อโปรด")
-      ):
-        p.paragraph_format.first_line_indent = Pt(66)
-        p.paragraph_format.left_indent = Pt(0)
-        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-
-      elif re.match(r"^[๑-๙]\.[๑-๙]", text):
-        p.paragraph_format.first_line_indent = Pt(72)
-        p.paragraph_format.left_indent = Pt(0)
-        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+        if (
+            re.match(r"^[๑-๙]\.\s", text)
+            or text.startswith("จึงเรียนมา")
+            or text.startswith("เพื่อลงชื่อ")
+            or text.startswith("เพื่อโปรด")
+        ):
+            p.paragraph_format.first_line_indent = Pt(66)
+            p.paragraph_format.left_indent = Pt(0)
+            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+            
+        elif re.match(r"^[๑-๙]\.[๑-๙]", text):
+            p.paragraph_format.first_line_indent = Pt(72)
+            p.paragraph_format.left_indent = Pt(0)
+            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
 
     doc_m.save(out_memo_path)
 
