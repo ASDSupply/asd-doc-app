@@ -261,7 +261,7 @@ HELICOPTER_CONTRACT_MAP = {
     "BELL": "๘/๒๕๖๙ จอ.",
     "BELL-412EP": "๑๘/๒๕๖๙ จอ.",
     "H225M": "๑๓/๒๕๖๙ จอ.",
-    "S70i": "๑۹/๒๕๖๙ จอ.",
+    "S70i": "๑๙/๒๕๖๙ จอ.",
     "H135": "๑๕/๒๕๖๘ จอ.",
     "TEST": "๐๑/๒๕๖๘ จอ.",
     "F16": "๒/๒๕๖๙ จอ.",
@@ -645,11 +645,13 @@ def generate_documents_process(
     prev_was_sub_l = False
 
     for p in doc_l.paragraphs:
-        p.paragraph_format.line_spacing = 0.88
-        
         text = p.text.strip()
+        
+        # 📌 ป้องกันตาครุฑเด้ง: ถ้าเป็นบรรทัดว่าง ให้ข้ามไปเลย ไม่ต้องบีบ 0.88
         if not text:
             continue
+            
+        p.paragraph_format.line_spacing = 0.88 # บีบเฉพาะบรรทัดที่มีตัวอักษร
             
         match = list_pattern.match(text)
         if match:
@@ -688,11 +690,13 @@ def generate_documents_process(
     prev_was_sub_m = False
 
     for p in doc_m.paragraphs:
-        p.paragraph_format.line_spacing = 0.88
-        
         text = p.text.strip()
+        
+        # 📌 ป้องกันรูปแบบเด้ง: ข้ามบรรทัดว่าง
         if not text:
             continue
+            
+        p.paragraph_format.line_spacing = 0.88
             
         match = list_pattern.match(text)
         if match:
@@ -732,24 +736,42 @@ def generate_documents_process(
     doc_m.save(out_memo_path)
 
     # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (เพิ่มใหม่ตามที่ตกลงกัน)
+    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (ตัดลายเซ็นสายรายงานออก + แปะ ร่าง พิมพ์ ทาน)
     # =========================================================================
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # สร้างบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา) ไว้ท้ายเอกสาร
-    doc_copy.add_paragraph() # เคาะบรรทัดทิ้ง 1 บรรทัด
+    # 1. ค้นหาจุดตัด (หาคำว่า "เรียน จก.ชอ.") เพื่อเริ่มลบตั้งแต่บรรทัดนี้
+    delete_start_idx = -1
+    for i, p in enumerate(doc_copy.paragraphs):
+        text_no_space = p.text.replace(" ", "").replace("\u200b", "")
+        # ถ้าเจอ "เรียนจก.ชอ." จะเก็บ index ไว้เป็นจุดเริ่มหั่น
+        if "เรียนจก.ชอ." in text_no_space or "-ลงชื่อให้แล้ว" in text_no_space:
+            delete_start_idx = i
+            break
+
+    # 2. หั่นย่อหน้าตั้งแต่จุดที่เจอ "เรียน จก.ชอ." ทิ้งทั้งหมดจนจบเอกสาร
+    if delete_start_idx != -1:
+        paragraphs = doc_copy.paragraphs
+        for p in paragraphs[delete_start_idx:]:
+            p_element = p._element
+            p_element.getparent().remove(p_element)
+            p._element, p._p = None, None
+
+    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา) ไว้ท้ายเอกสาร
+    doc_copy.add_paragraph() 
     doc_copy.add_paragraph()
 
+    # 📌 ปรับลดยาวจุดไข่ปลาตรง "พิมพ์/ทาน" ให้ขยับมาพอดีกับบรรทัดอื่น และแก้ ยศ เป็น ร.ต. / จ.ต. / ร.ท.
     footer_texts = [
-        f"ร.ต.......................................................ร่าง.......................{short_date}",
-        f"ร.ท.......................................................พิมพ์/ทาน...................{short_date}",
-        f"น.อ......................................................ตรวจ......................{short_date}"
+        f"ร.ต.......................................................ร่าง..................................{short_date}",
+        f"จ.ต...................................................พิมพ์/ทาน............................{short_date}",
+        f"ร.ท......................................................ตรวจ..................................{short_date}"
     ]
 
     for text in footer_texts:
         p_foot = doc_copy.add_paragraph()
-        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT # ดันไปชิดขวาสุด
+        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT 
         run_foot = p_foot.add_run(text)
         run_foot.font.name = 'TH SarabunPSK'
         run_foot.font.size = Pt(16)
