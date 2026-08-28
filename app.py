@@ -567,7 +567,7 @@ def generate_documents_process(
     total_count = len(formatted_parts)
     item_count_thai = to_thai_num(total_count)
 
-    # 📌 เปลี่ยนเงื่อนไขใหม่ตามบรีฟ: ถ้า 1-2 รายการให้แสดงรายการ, ถ้า 3 รายการขึ้นไปรวบยอด
+    # 📌 ปรับปรุงกรณี 2 รายการ ให้แยกย่อหน้าและดีดระยะห่าง 6 PT ออกจากข้อความหลัก
     if total_count == 1:
       p = formatted_parts[0]
       clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -634,122 +634,69 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้าและระยะห่าง (หนังสือภายนอก & บันทึกข้อความ) - อัปเดตใหม่
+    # 🎯 7. จัดย่อหน้า (แก้เฉพาะจุด ๑.๑ ให้ห่างจากข้อความหลัก 6 PT)
     # =========================================================================
 
     # === จัดการหนังสือภายนอก (Letter) ===
     doc_l = docx.Document(out_letter_path)
-
     for p in doc_l.paragraphs:
-        text = p.text.strip()
-        if not text:
-            continue  # 📌 ข้ามบรรทัดว่างทั้งหมด ทำให้ตราครุฑไม่เด้งแน่นอน
-            
-        p.paragraph_format.line_spacing = 0.90
-            
-        # 📌 ดีดช่องว่างแบบเห็นได้ชัด (12 PT) ที่หัวข้อเพื่อแยกกลุ่มตัวแปรออกจากข้อหลัก
-        if (
-            text.startswith("ตามอ้างถึง") or
-            text.startswith("ด้วย") or
-            text.startswith("จึงขอให้") or
-            text.startswith("จึงเรียนมา")
-        ):
-            p.paragraph_format.space_before = Pt(12)
-            p.paragraph_format.space_after = Pt(0)
-        else:
-            p.paragraph_format.space_after = Pt(0)
-
-        # 📌 จัดย่อหน้า Indent 45 PT เฉพาะคำที่กำหนด
-        if (
-            text.startswith("ตามอ้างถึง")
-            or text.startswith("จึงขอให้")
-            or text.startswith("จึงเรียนมา")
-        ):
-            p.paragraph_format.first_line_indent = Pt(45)
-            p.paragraph_format.left_indent = Pt(0)
-            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-
+      text = p.text.strip()
+      if text.startswith("๑.๑"):
+        p.paragraph_format.space_before = Pt(6)  # ดีดข้อย่อยแรกออกจากข้อความ 6 PT
+      
+      if (
+          text.startswith("ตามอ้างถึง")
+          or text.startswith("จึงขอให้")
+          or text.startswith("จึงเรียนมา")
+      ):
+        p.paragraph_format.first_line_indent = Pt(45)
+        p.paragraph_format.left_indent = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
     doc_l.save(out_letter_path)
-
 
     # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
     doc_m = docx.Document(out_memo_path)
-
     for p in doc_m.paragraphs:
-        text = p.text.strip()
-        if not text:
-            continue  # 📌 ข้ามบรรทัดว่างทั้งหมด ทำให้ตราครุฑไม่เด้งแน่นอน
-            
-        p.paragraph_format.line_spacing = 0.90
-            
-        # 📌 ดีดช่องว่างแบบเห็นได้ชัด (12 PT) งัดให้ข้อ 2. หลุดออกจากรายการ 1.2
-        if (
-            re.match(r"^[๑-๙]\.\s", text) or 
-            text.startswith("จึงเรียนมา") or 
-            text.startswith("เพื่อลงชื่อ") or 
-            text.startswith("เพื่อโปรด") or 
-            text.startswith("ตามอ้างถึง")
-        ):
-            p.paragraph_format.space_before = Pt(12)
-            p.paragraph_format.space_after = Pt(0)
-        else:
-            p.paragraph_format.space_after = Pt(0)
+      text = p.text.strip()
+      if text.startswith("๑.๑"):
+        p.paragraph_format.space_before = Pt(6)  # ดีดข้อย่อยแรกออกจากข้อความ 6 PT
 
-        # 📌 จัดย่อหน้า Indent 66 PT และ 72 PT ตามลำดับ
-        if (
-            re.match(r"^[๑-๙]\.\s", text)
-            or text.startswith("จึงเรียนมา")
-            or text.startswith("เพื่อลงชื่อ")
-            or text.startswith("เพื่อโปรด")
-        ):
-            p.paragraph_format.first_line_indent = Pt(66)
-            p.paragraph_format.left_indent = Pt(0)
-            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-            
-        elif re.match(r"^[๑-๙]\.[๑-๙]", text):
-            p.paragraph_format.first_line_indent = Pt(72)
-            p.paragraph_format.left_indent = Pt(0)
-            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+      if (
+          re.match(r"^[๑-๙]\.\s", text)
+          or text.startswith("จึงเรียนมา")
+          or text.startswith("เพื่อลงชื่อ")
+          or text.startswith("เพื่อโปรด")
+      ):
+        p.paragraph_format.first_line_indent = Pt(66)
+        p.paragraph_format.left_indent = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+
+      elif re.match(r"^[๑-๙]\.[๑-๙]", text):
+        p.paragraph_format.first_line_indent = Pt(72)
+        p.paragraph_format.left_indent = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
 
     doc_m.save(out_memo_path)
 
-
     # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (หั่นลายเซ็นเด็ดขาด + แปะ ร่าง พิมพ์ ทาน)
+    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (เพิ่มใหม่ตามที่ตกลงกัน)
     # =========================================================================
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # 1. ค้นหาคำว่า "เรียน จก.ชอ." แบบตัดช่องว่างทิ้งทั้งหมด ป้องกันบั๊กเคาะวรรค
-    delete_start_idx = -1
-    for i, p in enumerate(doc_copy.paragraphs):
-        text_clean = p.text.replace(" ", "").replace("\u200b", "").replace(".", "")
-        if "เรียนจกชอ" in text_clean or "-ลงชื่อให้แล้ว" in text_clean:
-            delete_start_idx = i
-            break
-
-    # 2. หั่นทิ้งแบบถอนรากถอนโคน ตั้งแต่ "เรียน จก.ชอ." ลากยาวไปจนจบกระดาษ
-    if delete_start_idx != -1:
-        for p in list(doc_copy.paragraphs)[delete_start_idx:]:
-            p_element = p._element
-            parent = p_element.getparent()
-            if parent is not None:
-                parent.remove(p_element)
-            p._p = p._element = None
-
-    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบชิดขวาล่างสุด
-    for _ in range(6):  # 📌 เคาะบรรทัดว่าง 6 ครั้งเพื่อดันข้อความให้ไปตกอยู่ขวาล่าง
-        doc_copy.add_paragraph() 
+    # สร้างบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา) ไว้ท้ายเอกสาร
+    doc_copy.add_paragraph() # เคาะบรรทัดทิ้ง 1 บรรทัด
+    doc_copy.add_paragraph()
 
     footer_texts = [
-        f"ร.ต.......................................................ร่าง..................................{short_date}",
-        f"จ.ต...................................................พิมพ์/ทาน............................{short_date}",
-        f"ร.ท......................................................ตรวจ..................................{short_date}"
+        f"ร.ต.......................................................ร่าง.......................{short_date}",
+        f"ร.ท.......................................................พิมพ์/ทาน...................{short_date}",
+        f"น.อ......................................................ตรวจ......................{short_date}"
     ]
 
     for text in footer_texts:
         p_foot = doc_copy.add_paragraph()
-        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT # 📌 ดันไปชิดขวาสุด
+        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT # ดันไปชิดขวาสุด
         run_foot = p_foot.add_run(text)
         run_foot.font.name = 'TH SarabunPSK'
         run_foot.font.size = Pt(16)
@@ -820,9 +767,9 @@ except Exception as e:
 st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================================================================
-# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
+# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน (แก้ไขจุดที่ 4)
 # =========================================================================
-SECRET_PASSWORD = "36529" 
+SECRET_PASSWORD = "ASD" 
 
 doc_password = st.text_input(
     "🔒 กรอกรหัสผ่านเพื่ออนุมัติการสร้างเอกสาร:", type="password"
@@ -902,6 +849,7 @@ st.markdown(
 </div>
 
 <div class="dev-card">
+<!-- 📌 แก้ไขจุดที่ 3: ปรับขนาดตัวอักษรผู้พัฒนาเป็น 0.94rem -->
 <div style="font-size: 0.94rem; color: #37474f;">
 <span class="material-icons" style="vertical-align: middle; color: #1e88e5; font-size: 1.2rem;">code</span>
 ผู้พัฒนาและผู้ดูแลระบบ: <strong>ธรรศ วรวัฒนานุกูล</strong>
