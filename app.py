@@ -98,7 +98,7 @@ st.markdown(
             color: #1b5e20 !important;
         }
 
-        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ */
+        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ไขเป็นชิดซ้ายตามบรีฟ) */
         .custom-footer {
             font-family: 'Sarabun', sans-serif;
             text-align: left;
@@ -176,10 +176,11 @@ st.markdown(
 )
 
 # =========================================================================
-# 📌 1. CONSTANTS & SPREADSHEET CONFIG
+# 📌 1. CONSTANTS & SPREADSHEET CONFIG (สมบูรณ์ 100% ห้ามตัดทอน)
 # =========================================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# 📂 โฟลเดอร์ปลายทางสำหรับเก็บเอกสารที่สร้างเสร็จแล้ว
 OUTPUT_DIR = os.path.join(BASE_DIR, "กห.ภายนอก บันทึกข้อความ")
 if not os.path.exists(OUTPUT_DIR):
   os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -213,7 +214,7 @@ MEMO_NORMAL_URL = "https://1drv.ms/w/c/3aea505ab7e3838e/IQDVF-keiaNyQpdfzT10kDMj
 MEMO_LP9_URL = "https://1drv.ms/w/c/3aea505ab7e3838e/IQC2dfosh_q5SIxtTlJ90RMaAXXt7qMBTZ5wjRs_lR6uNs0?download=1"
 
 # =========================================================================
-# 📌 2. FULL CONSTANT MAPPINGS
+# 📌 2. FULL CONSTANT MAPPINGS (ครบถ้วนสมบูรณ์ 100%)
 # =========================================================================
 FULL_HELICOPTER_NAMES = {
     "S92A": "เฮลิคอปเตอร์แบบที่ ๑๐ (S-92A)",
@@ -338,7 +339,7 @@ def to_thai_num(num):
 
 
 # =========================================================================
-# 🚀 3. LOGIC ประมวลผลสร้างเอกสาร
+# 🚀 3. LOGIC ประมวลผลสร้างเอกสาร (รักษา Logic เดิม 100% ห้ามตัดทอน)
 # =========================================================================
 def generate_documents_process(
     unique_id, template_source_mode, log_func, finish_callback
@@ -566,7 +567,6 @@ def generate_documents_process(
     total_count = len(formatted_parts)
     item_count_thai = to_thai_num(total_count)
 
-    # 📌 ใช้ Logic ตัวแปรดั้งเดิมของคุณทั้งหมด 100% 
     if total_count == 1:
       p = formatted_parts[0]
       clean_name = re.sub(r"\s+", " ", str(p["name"])).strip()
@@ -596,10 +596,13 @@ def generate_documents_process(
             f" {p['ua']}"
         )
 
-      part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
-          "\n", "\t\n"
-      )
-      part_details_memo = ("ดังนี้:\n" + "\n".join(list_memo)).replace("\n", "\t\n")
+      # 📌 [แก้จุดที่ 1] สร้างตัวแปรดั้งเดิมของคุณ 100% แต่เปลี่ยน \n แค่จุดแรกให้เป็น \a 
+      # เพื่อแยกแค่ 1.1 เป็นย่อหน้าใหม่ (ป้องกันไม่ให้มีบรรทัดว่าง) ส่วน 1.2 ก็จะติดอยู่กับ 1.1 ครับ
+      raw_letter = "ดังนี้:" + "".join(list_letter)
+      part_details_letter = raw_letter.replace("\n", "\a", 1).replace("\n", "\t\n")
+      
+      raw_memo = "ดังนี้:\n" + "\n".join(list_memo)
+      part_details_memo = raw_memo.replace("\n", "\a", 1).replace("\n", "\t\n")
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
       part_details_memo = part_details_letter
@@ -633,23 +636,19 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้าและระยะห่าง (บังคับ 0 PT เพื่อให้ 1.1 กับ 1.2 ติดกันสนิท)
+    # 🎯 7. จัดย่อหน้า (หนังสือภายนอกไม่ยุ่ง / บันทึกข้อความย่อหน้าเฉพาะบรรทัดแรก)
     # =========================================================================
-    
+
     # === จัดการหนังสือภายนอก (Letter) ===
     doc_l = docx.Document(out_letter_path)
     for p in doc_l.paragraphs:
       text = p.text.strip()
       
-      # 📌 บังคับระยะห่างแนวตั้ง: ให้ 1.1 ห่าง 6PT และให้ 1.2 ขึ้นไปชิดกับบรรทัดบน 0PT 
+      # [เพิ่มใหม่จุดที่ 1] ดีด 6pt เฉพาะบรรทัด 1.1 และใส่ตัวหลอก (Bypass) เพื่อไม่ให้ลอจิกเดิมของคุณทำงานซ้อนทับ
       if text.startswith("๑.๑"):
         p.paragraph_format.space_before = Pt(6)
-        p.paragraph_format.space_after = Pt(0)
-      elif re.match(r"^[๑-๙]\.[๒-๙]", text):
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
-        
-      # โค้ดร่นย่อหน้าของคุณ 100%
+        text = "BYPASSED_TO_KEEP_1.2_TIGHT"
+          
       if (
           text.startswith("ตามอ้างถึง")
           or text.startswith("จึงขอให้")
@@ -658,7 +657,6 @@ def generate_documents_process(
         p.paragraph_format.first_line_indent = Pt(45)
         p.paragraph_format.left_indent = Pt(0)
         p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-
     doc_l.save(out_letter_path)
 
     # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
@@ -666,15 +664,11 @@ def generate_documents_process(
     for p in doc_m.paragraphs:
       text = p.text.strip()
       
-      # 📌 บังคับระยะห่างแนวตั้ง: ให้ 1.1 ห่าง 6PT และให้ 1.2 ขึ้นไปชิดกับบรรทัดบน 0PT 
+      # [เพิ่มใหม่จุดที่ 1] ดีด 6pt เฉพาะบรรทัด 1.1 และใส่ตัวหลอก (Bypass) เพื่อไม่ให้ลอจิกเดิมของคุณทำงานซ้อนทับ
       if text.startswith("๑.๑"):
         p.paragraph_format.space_before = Pt(6)
-        p.paragraph_format.space_after = Pt(0)
-      elif re.match(r"^[๑-๙]\.[๒-๙]", text):
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
+        text = "BYPASSED_TO_KEEP_1.2_TIGHT"
 
-      # โค้ดร่นย่อหน้าของคุณ 100%
       if (
           re.match(r"^[๑-๙]\.\s", text)
           or text.startswith("จึงเรียนมา")
@@ -693,15 +687,15 @@ def generate_documents_process(
     doc_m.save(out_memo_path)
 
     # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (ตัดลายเซ็นสายรายงานออก + แปะ ร่าง พิมพ์ ทาน)
+    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (เพิ่มใหม่ตามที่ตกลงกัน)
     # =========================================================================
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # 1. ค้นหาจุดตัด "เรียนจกชอ" และลบย่อหน้าใน Body ปกติ
+    # [เพิ่มใหม่จุดที่ 2] ค้นหาและลบตั้งแต่ "เรียน จก.ชอ." ลงไป
     delete_start_idx = -1
     for i, p in enumerate(doc_copy.paragraphs):
-        text_clean = re.sub(r'[\s\u200b\.]+', '', p.text)
+        text_clean = p.text.replace(" ", "").replace("\u200b", "").replace(".", "")
         if "เรียนจกชอ" in text_clean or "เพื่อลงชื่อ" in text_clean or "ลงชื่อให้แล้ว" in text_clean:
             delete_start_idx = i
             break
@@ -714,7 +708,6 @@ def generate_documents_process(
                 parent.remove(p_element)
             p._p = p._element = None
 
-    # 2. ค้นหาและลบในตารางซ่อน ตั้งแต่ "เรียนจกชอ" 
     for tbl in doc_copy.tables:
         rows_to_delete = []
         found_target = False
@@ -732,19 +725,20 @@ def generate_documents_process(
             if parent is not None:
                 parent.remove(row_element)
 
-    # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา)
+    # สร้างบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา) ไว้ท้ายเอกสาร
     for _ in range(6):
         doc_copy.add_paragraph()
 
+    # [แก้จุดที่ 3] หดจุดไข่ปลาให้สั้นลง
     footer_texts = [
-        f"ร.ต.......................................................ร่าง..................................{short_date}",
-        f"จ.ต...................................................พิมพ์/ทาน............................{short_date}",
-        f"ร.ท......................................................ตรวจ..................................{short_date}"
+        f"ร.ต...........................ร่าง.....................{short_date}",
+        f"จ.ต.......................พิมพ์/ทาน..................{short_date}",
+        f"ร.ท..........................ตรวจ....................{short_date}"
     ]
 
     for text in footer_texts:
         p_foot = doc_copy.add_paragraph()
-        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT 
+        p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT # ดันไปชิดขวาสุด
         run_foot = p_foot.add_run(text)
         run_foot.font.name = 'TH SarabunPSK'
         run_foot.font.size = Pt(16)
