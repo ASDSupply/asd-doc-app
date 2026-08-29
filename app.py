@@ -668,7 +668,7 @@ def generate_documents_process(
         p.paragraph_format.first_line_indent = Pt(66)
         p.paragraph_format.left_indent = Pt(0)
         p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-       elif re.match(r"^[๑-๙]\.[๑-๙]", text):
+     elif re.match(r"^[๑-๙]\.[๑-๙]", text):
             p.paragraph_format.first_line_indent = Pt(72)
             p.paragraph_format.left_indent = Pt(0)
             p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
@@ -676,9 +676,9 @@ def generate_documents_process(
             p.paragraph_format.line_spacing = 0.90
             p.paragraph_format.space_after = Pt(0)
             
-            if text.startswith("๑.๑"):
+     if text.startswith("๑.๑"):
                 p.paragraph_format.space_before = Pt(6) 
-            else:
+     else:
                 p.paragraph_format.space_before = Pt(0) 
 
     doc_m.save(out_memo_path)   
