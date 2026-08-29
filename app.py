@@ -598,7 +598,7 @@ def generate_documents_process(
       part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
           "\n", "\t\n"
       )
-      # 📌 โค้ดต้นฉบับของคุณแบบไม่มีการแทรกแซงตัวแปรใดๆ ทั้งสิ้น 100%
+      # 📌 โค้ดต้นฉบับของแบบไม่มีการแทรกแซงตัวแปรใดๆ ทั้งสิ้น 100%
       part_details_memo = ("ดังนี้:\n" + "\n".join(list_memo)).replace("\n", "\t\n")
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
@@ -668,12 +668,20 @@ def generate_documents_process(
         p.paragraph_format.first_line_indent = Pt(66)
         p.paragraph_format.left_indent = Pt(0)
         p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+       elif re.match(r"^[๑-๙]\.[๑-๙]", text):
+            p.paragraph_format.first_line_indent = Pt(72)
+            p.paragraph_format.left_indent = Pt(0)
+            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+            
+            p.paragraph_format.line_spacing = 0.90
+            p.paragraph_format.space_after = Pt(0)
+            
+            if text.startswith("๑.๑"):
+                p.paragraph_format.space_before = Pt(6) 
+            else:
+                p.paragraph_format.space_before = Pt(0) 
 
-      elif re.match(r"^[๑-๙]\.[๑-๙]", text):
-        p.paragraph_format.first_line_indent = Pt(72)
-        p.paragraph_format.left_indent = Pt(0)
-        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-    doc_m.save(out_memo_path)
+    doc_m.save(out_memo_path)   
 
     # =========================================================================
     # 📌 โค้ดส่วนสร้างสำเนา 4 ไฟล์
@@ -681,9 +689,9 @@ def generate_documents_process(
     
     # กำหนดรูปแบบลายเซ็น ร่าง/พิมพ์/ทาน ที่ถูกปรับหดให้สั้นลงตามคำสั่ง
     footer_texts_short = [
-        f"ร.ต.........................ร่าง.....................{short_date}",
-        f"จ.ต.....................พิมพ์/ทาน..................{short_date}",
-        f"ร.ท........................ตรวจ......................{short_date}"
+        f"ร.ต.........................ร่าง...................{short_date}",
+        f"..........................พิมพ์/ทาน................{short_date}",
+        f"ร.ท........................ตรวจ...................{short_date}"
     ]
 
     # --- 1. สร้างสำเนาหนังสือภายนอก (ไม่ลบข้อความใดๆ) ---
