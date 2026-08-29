@@ -652,23 +652,22 @@ def generate_documents_process(
         p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
     doc_l.save(out_letter_path)
 
-    # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
+        # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
     doc_m = docx.Document(out_memo_path)
     for p in doc_m.paragraphs:
-      text = p.text.strip()
-      if text.startswith("๑.๑"):
-          p.paragraph_format.space_before = Pt(6)
+        text = p.text.strip()
+        
+        if (
+            re.match(r"^[๑-๙]\.\s", text)
+            or text.startswith("จึงเรียนมา")
+            or text.startswith("เพื่อลงชื่อ")
+            or text.startswith("เพื่อโปรด")
+        ):
+            p.paragraph_format.first_line_indent = Pt(66)
+            p.paragraph_format.left_indent = Pt(0)
+            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
 
-      if (
-          re.match(r"^[๑-๙]\.\s", text)
-          or text.startswith("จึงเรียนมา")
-          or text.startswith("เพื่อลงชื่อ")
-          or text.startswith("เพื่อโปรด")
-      ):
-        p.paragraph_format.first_line_indent = Pt(66)
-        p.paragraph_format.left_indent = Pt(0)
-        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-     elif re.match(r"^[๑-๙]\.[๑-๙]", text):
+        elif re.match(r"^[๑-๙]\.[๑-๙]", text):
             p.paragraph_format.first_line_indent = Pt(72)
             p.paragraph_format.left_indent = Pt(0)
             p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
@@ -676,12 +675,13 @@ def generate_documents_process(
             p.paragraph_format.line_spacing = 0.90
             p.paragraph_format.space_after = Pt(0)
             
-     if text.startswith("๑.๑"):
+            if text.startswith("๑.๑"):
                 p.paragraph_format.space_before = Pt(6) 
-     else:
+            else:
                 p.paragraph_format.space_before = Pt(0) 
 
-    doc_m.save(out_memo_path)   
+    doc_m.save(out_memo_path)
+
 
     # =========================================================================
     # 📌 โค้ดส่วนสร้างสำเนา 4 ไฟล์
