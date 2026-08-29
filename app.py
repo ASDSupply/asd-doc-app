@@ -98,7 +98,7 @@ st.markdown(
             color: #1b5e20 !important;
         }
 
-        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ไขเป็นชิดซ้ายตามบรีฟ) */
+        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ */
         .custom-footer {
             font-family: 'Sarabun', sans-serif;
             text-align: left;
@@ -176,11 +176,10 @@ st.markdown(
 )
 
 # =========================================================================
-# 📌 1. CONSTANTS & SPREADSHEET CONFIG (สมบูรณ์ 100% ห้ามตัดทอน)
+# 📌 1. CONSTANTS & SPREADSHEET CONFIG
 # =========================================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 📂 โฟลเดอร์ปลายทางสำหรับเก็บเอกสารที่สร้างเสร็จแล้ว
 OUTPUT_DIR = os.path.join(BASE_DIR, "กห.ภายนอก บันทึกข้อความ")
 if not os.path.exists(OUTPUT_DIR):
   os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -214,7 +213,7 @@ MEMO_NORMAL_URL = "https://1drv.ms/w/c/3aea505ab7e3838e/IQDVF-keiaNyQpdfzT10kDMj
 MEMO_LP9_URL = "https://1drv.ms/w/c/3aea505ab7e3838e/IQC2dfosh_q5SIxtTlJ90RMaAXXt7qMBTZ5wjRs_lR6uNs0?download=1"
 
 # =========================================================================
-# 📌 2. FULL CONSTANT MAPPINGS (ครบถ้วนสมบูรณ์ 100%)
+# 📌 2. FULL CONSTANT MAPPINGS
 # =========================================================================
 FULL_HELICOPTER_NAMES = {
     "S92A": "เฮลิคอปเตอร์แบบที่ ๑๐ (S-92A)",
@@ -339,7 +338,7 @@ def to_thai_num(num):
 
 
 # =========================================================================
-# 🚀 3. LOGIC ประมวลผลสร้างเอกสาร (รักษา Logic เดิม 100% ห้ามตัดทอน)
+# 🚀 3. LOGIC ประมวลผลสร้างเอกสาร
 # =========================================================================
 def generate_documents_process(
     unique_id, template_source_mode, log_func, finish_callback
@@ -596,12 +595,11 @@ def generate_documents_process(
             f" {p['ua']}"
         )
 
-      # 📌 เปลี่ยนเฉพาะตัวแรกสุดเป็น \a เพื่อแยก 1.1 ออกมาย่อหน้าใหม่ แต่ 1.2 ติดอยู่ย่อหน้าเดิม
-      raw_letter = "".join(list_letter)
-      part_details_letter = ("ดังนี้:" + raw_letter.replace("\n", "\a", 1)).replace("\n", "\t\n")
-      
-      raw_memo = "\n".join(list_memo)
-      part_details_memo = ("ดังนี้:\a" + raw_memo).replace("\n", "\t\n")
+      part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
+          "\n", "\t\n"
+      )
+      # 📌 โค้ดต้นฉบับของคุณแบบไม่มีการแทรกแซงตัวแปรใดๆ ทั้งสิ้น 100%
+      part_details_memo = ("ดังนี้:\n" + "\n".join(list_memo)).replace("\n", "\t\n")
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
       part_details_memo = part_details_letter
@@ -635,156 +633,65 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้าและระยะห่าง (หนังสือภายนอก & บันทึกข้อความ) - อัปเดตใหม่
+    # 🎯 7. จัดย่อหน้า (ตาม Logic เดิมของคุณ 100%)
     # =========================================================================
-    list_pattern = re.compile(r"^([๑-๙0-9]+)\.(?:([๑-๙0-9]+))?\s")
 
     # === จัดการหนังสือภายนอก (Letter) ===
     doc_l = docx.Document(out_letter_path)
-    prev_was_list_l = False
-    prev_was_sub_l = False
-
     for p in doc_l.paragraphs:
-        text = p.text.strip()
-        if not text:
-            continue
-            
-        # 📌 ล็อกตราครุฑและโครงสร้าง Template ไม่ให้เด้ง: ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลักเท่านั้น
-        is_body_text = False
-        if (
-            list_pattern.match(text) or
-            text.startswith("ตามอ้างถึง") or
-            text.startswith("จึงขอให้") or
-            text.startswith("จึงเรียนมา") or
-            text.startswith("ด้วย") or
-            text.startswith("รายละเอียดตามใบแจ้ง") or
-            "ดังนี้:" in text
-        ):
-            is_body_text = True
-
-        if is_body_text:
-            p.paragraph_format.line_spacing = 0.90
-            
-        match = list_pattern.match(text)
-        
-        # 📌 แทรกคำสั่งดีด 6 PT เฉพาะ 1.1 ตรงนี้ (ไม่กวน Indent 1.2 แน่นอน)
-        if text.startswith("๑.๑"):
-            p.paragraph_format.space_before = Pt(6)
-            
-        if match:
-            is_sub = match.group(2) is not None
-            if not prev_was_list_l:
-                p.paragraph_format.space_before = Pt(6) # 📌 เริ่มรายการใหม่ ดีดออก 6 PT 
-            else:
-                if not is_sub and prev_was_sub_l:
-                    p.paragraph_format.space_before = Pt(6) # 📌 จบข้อย่อย(1.2) กลับมาขึ้นข้อหลัก(2.) ดีดออก 6 PT
-                else:
-                    p.paragraph_format.space_before = Pt(0)
-            
-            p.paragraph_format.space_after = Pt(0)
-            prev_was_list_l = True
-            prev_was_sub_l = is_sub
-        else:
-            if prev_was_list_l:
-                p.paragraph_format.space_before = Pt(6) # 📌 จบกลุ่มรายการ กลับมาที่ข้อความปกติ ดีดออก 6 PT
-            prev_was_list_l = False
-            prev_was_sub_l = False
-
-        if (
-            text.startswith("ตามอ้างถึง")
-            or text.startswith("จึงขอให้")
-            or text.startswith("จึงเรียนมา")
-        ):
-            p.paragraph_format.first_line_indent = Pt(45)
-            p.paragraph_format.left_indent = Pt(0)
-            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-
+      text = p.text.strip()
+      if text.startswith("๑.๑"):
+          p.paragraph_format.space_before = Pt(6)
+      if (
+          text.startswith("ตามอ้างถึง")
+          or text.startswith("จึงขอให้")
+          or text.startswith("จึงเรียนมา")
+      ):
+        p.paragraph_format.first_line_indent = Pt(45)
+        p.paragraph_format.left_indent = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
     doc_l.save(out_letter_path)
 
     # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
     doc_m = docx.Document(out_memo_path)
-    prev_was_list_m = False
-    prev_was_sub_m = False
-
     for p in doc_m.paragraphs:
-        text = p.text.strip()
-        if not text:
-            continue
-            
-        # 📌 ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลัก
-        is_body_m = False
-        if (
-            list_pattern.match(text) or
-            text.startswith("จึงเรียนมา") or
-            text.startswith("เพื่อลงชื่อ") or
-            text.startswith("เพื่อโปรด") or
-            text.startswith("ด้วย") or
-            text.startswith("ตามอ้างถึง") or
-            text.startswith("รายละเอียดตามใบแจ้ง") or
-            "ดังนี้:" in text
-        ):
-            is_body_m = True
+      text = p.text.strip()
+      if text.startswith("๑.๑"):
+          p.paragraph_format.space_before = Pt(6)
 
-        if is_body_m:
-            p.paragraph_format.line_spacing = 0.90
-            
-        match = list_pattern.match(text)
-        
-        # 📌 แทรกคำสั่งดีด 6 PT เฉพาะ 1.1 ตรงนี้ (ไม่กวน Indent 1.2 แน่นอน)
-        if text.startswith("๑.๑"):
-            p.paragraph_format.space_before = Pt(6)
-            
-        if match:
-            is_sub = match.group(2) is not None
-            if not prev_was_list_m:
-                p.paragraph_format.space_before = Pt(6)
-            else:
-                if not is_sub and prev_was_sub_m:
-                    p.paragraph_format.space_before = Pt(6)
-                else:
-                    p.paragraph_format.space_before = Pt(0)
-                    
-            p.paragraph_format.space_after = Pt(0)
-            prev_was_list_m = True
-            prev_was_sub_m = is_sub
-        else:
-            if prev_was_list_m:
-                p.paragraph_format.space_before = Pt(6)
-            prev_was_list_m = False
-            prev_was_sub_m = False
+      if (
+          re.match(r"^[๑-๙]\.\s", text)
+          or text.startswith("จึงเรียนมา")
+          or text.startswith("เพื่อลงชื่อ")
+          or text.startswith("เพื่อโปรด")
+      ):
+        p.paragraph_format.first_line_indent = Pt(66)
+        p.paragraph_format.left_indent = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
 
-        if (
-            re.match(r"^[๑-๙]\.\s", text)
-            or text.startswith("จึงเรียนมา")
-            or text.startswith("เพื่อลงชื่อ")
-            or text.startswith("เพื่อโปรด")
-        ):
-            p.paragraph_format.first_line_indent = Pt(66)
-            p.paragraph_format.left_indent = Pt(0)
-            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-            
-        elif re.match(r"^[๑-๙]\.[๑-๙]", text):
-            p.paragraph_format.first_line_indent = Pt(72)
-            p.paragraph_format.left_indent = Pt(0)
-            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-
+      elif re.match(r"^[๑-๙]\.[๑-๙]", text):
+        p.paragraph_format.first_line_indent = Pt(72)
+        p.paragraph_format.left_indent = Pt(0)
+        p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
     doc_m.save(out_memo_path)
 
     # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาหนังสือภายนอก
+    # 📌 โค้ดส่วนสร้างสำเนา 4 ไฟล์
     # =========================================================================
-    out_letter_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาหนังสือภายนอก_{unique_id}.docx")
-    doc_letter_copy = docx.Document(out_letter_path)
-
-    for _ in range(3):
-        doc_letter_copy.add_paragraph()
-
-    # หดจุดไข่ปลาให้สั้นลง
+    
+    # กำหนดรูปแบบลายเซ็น ร่าง/พิมพ์/ทาน ที่ถูกปรับหดให้สั้นลงตามคำสั่ง
     footer_texts_short = [
         f"ร.ต.........................ร่าง.....................{short_date}",
         f"จ.ต.....................พิมพ์/ทาน..................{short_date}",
         f"ร.ท........................ตรวจ......................{short_date}"
     ]
+
+    # --- 1. สร้างสำเนาหนังสือภายนอก (ไม่ลบข้อความใดๆ) ---
+    out_letter_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาหนังสือภายนอก_{unique_id}.docx")
+    doc_letter_copy = docx.Document(out_letter_path)
+
+    for _ in range(3):
+        doc_letter_copy.add_paragraph()
 
     for text in footer_texts_short:
         p_foot = doc_letter_copy.add_paragraph()
@@ -795,13 +702,10 @@ def generate_documents_process(
 
     doc_letter_copy.save(out_letter_copy_path)
 
-    # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (บันทึกข้อความ) ลบ "เรียน จก.ชอ."
-    # =========================================================================
+    # --- 2. สร้างสำเนาบันทึกข้อความ (ลบ "เรียน จก.ชอ." ลงไปจนหมด) ---
     out_copy_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_{unique_id}.docx")
     doc_copy = docx.Document(out_memo_path)
 
-    # ค้นหาและลบย่อหน้าใน Body ปกติ ตั้งแต่ เรียน จก.ชอ. ลงไป
     delete_start_idx = -1
     for i, p in enumerate(doc_copy.paragraphs):
         text_clean = re.sub(r'[\s\u200b\.]+', '', p.text)
@@ -817,7 +721,6 @@ def generate_documents_process(
                 parent.remove(p_element)
             p._p = p._element = None
 
-    # ค้นหาและลบในตารางซ่อน ตั้งแต่ เรียน จก.ชอ. ลงไป
     for tbl in doc_copy.tables:
         rows_to_delete = []
         found_target = False
@@ -835,7 +738,6 @@ def generate_documents_process(
             if parent is not None:
                 parent.remove(row_element)
 
-    # เติมบล็อก "ร่าง พิมพ์ ทาน" แบบไม่มีกรอบ (ชิดขวา)
     for _ in range(6):
         doc_copy.add_paragraph()
 
@@ -883,8 +785,6 @@ def fetch_lps():
   lps = [row[1].strip() for row in data[1:] if len(row) > 1 and row[1].strip()]
   return list(dict.fromkeys(reversed(lps)))[:30]
 
-
-# 1. การ์ดตั้งค่าตัวเลือกสร้างเอกสาร
 st.markdown(
     '<div style="background:#ffffff; padding:22px; border-radius:16px;'
     ' border:1px solid #e2e8f0; box-shadow:0 4px 12px'
@@ -912,9 +812,6 @@ except Exception as e:
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# =========================================================================
-# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
-# =========================================================================
 SECRET_PASSWORD = "36529" 
 
 doc_password = st.text_input(
@@ -950,7 +847,6 @@ if st.button("🚀 เริ่มสร้างเอกสาร Word", type=
             if memo_copy_p and os.path.exists(memo_copy_p):
                 zip_file.write(memo_copy_p, f"๔_บันทึกข้อความ(สำเนา)_{clean_lp}.docx")
         
-        # ปุ่มดาวน์โหลดไฟล์ ZIP 
         st.download_button(
             label="📥 ดาวน์โหลดเอกสารทั้งหมด (ไฟล์ ZIP)",
             data=zip_buffer.getvalue(),
@@ -966,9 +862,6 @@ if st.button("🚀 เริ่มสร้างเอกสาร Word", type=
           clean_lp, template_mode, web_log, web_finish
       )
 
-# =========================================================================
-# 📌 FOOTER SECTION (คณะผู้จัดทำ & ผู้ดูแลระบบ ถอดแบบต้นฉบับ 100%)
-# =========================================================================
 st.markdown("---")
 st.markdown(
     """
