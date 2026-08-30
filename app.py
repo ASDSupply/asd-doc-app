@@ -98,50 +98,56 @@ st.markdown(
             color: #1b5e20 !important;
         }
 
-        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ไขเป็นชิดซ้ายตามบรีฟ) */
+        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ไขให้อยู่กึ่งกลาง ไม่ให้ชื่อโดนตัดบรรทัด) */
         .custom-footer {
             font-family: 'Sarabun', sans-serif;
-            text-align: left;
+            text-align: center;
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 16px;
             padding: 35px 20px;
-            margin-top: 40px;
+            margin: 40px auto 0 auto;
+            max-width: 800px;
             color: #333333;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
         }
         .footer-system-title {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             color: #37474f;
             margin-bottom: 20px;
         }
         .footer-leader {
             margin-bottom: 18px;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             color: #212121;
         }
         .advisor-row {
             display: flex;
             flex-wrap: wrap;
-            justify-content: flex-start;
+            justify-content: center;
             gap: 20px;
             margin: 15px 0 25px 0;
         }
         .advisor-col {
-            flex: 1 1 260px;
-            max-width: 340px;
-            font-size: 0.95rem;
+            flex: 1 1 300px;
+            max-width: 350px;
+            font-size: 0.9rem;
             color: #424242;
         }
         .dev-card {
-            margin: 0 0 20px 0;
+            margin: 0 auto 20px auto;
             padding: 20px;
             border: 1px dashed #cfd8dc;
             border-radius: 12px;
-            max-width: 580px;
+            max-width: 500px;
             background-color: #ffffff;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            text-align: center;
+        }
+        /* บังคับไม่ให้ชื่อเว้นบรรทัดเด็ดขาด */
+        .custom-footer strong {
+            white-space: nowrap;
         }
         .btn-report {
             display: inline-block;
@@ -590,18 +596,18 @@ def generate_documents_process(
         list_letter.append(
             str_letter.replace("---------------", "             ")
         )
-        # 📌 แก้ไขจุดที่ 1-2: ล็อก 28 เคาะตามบรีฟ (เอา \n ด้านหน้าออกเพื่อไม่ให้โดดห่าง)
+        
+        # 📌 ล็อก 22 เคาะ และใส่ \u200b ป้องกันการโดนโปรแกรมแทรกแซงระยะห่าง
         list_memo.append(
-            f"                      ๑.{sub_item_thai}\u200b"
+            f"\u200b                      ๑.{sub_item_thai}\u200b"
             f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
             f" {p['ua']}"
         )
 
-      part_details_letter = ("ดังนี้:" + "".join(list_letter)).replace(
-          "\n", "\t\n"
-      )
-      # 📌 แก้ไขจุดที่ 1-2: เชื่อมด้วย \n แล้ว replace เป็น \t\n ตามลอจิกเดิมของคุณ เพื่อป้องกันคำฉีก (E A C H) และเว้นแค่ 1 บรรทัด
-      part_details_memo = ("ดังนี้:\n" + "\n".join(list_memo)).replace("\n", "\t\n")
+      # 📌 แยกคำว่า "ดังนี้:" ออกจากข้อ 1.1 ด้วยการตัดย่อหน้า (\a) เพื่อให้เคาะเว้น 6 PT ได้
+      part_details_letter = "ดังนี้:\a" + "".join(list_letter).lstrip("\n").replace("\n", "\t\n")
+      part_details_memo = "ดังนี้:\a" + "\t\n".join(list_memo)
+      
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
       part_details_memo = part_details_letter
@@ -635,55 +641,18 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้าและระยะห่าง (หนังสือภายนอก & บันทึกข้อความ) - อัปเดตใหม่
+    # 🎯 7. จัดย่อหน้า (คืนค่าลอจิกต้นฉบับ 100% เพิ่มแค่เงื่อนไขเว้นล่าง 6 PT หลังคำว่าดังนี้)
     # =========================================================================
-    list_pattern = re.compile(r"^([๑-๙0-9]+)\.(?:([๑-๙0-9]+))?\s")
-
     # === จัดการหนังสือภายนอก (Letter) ===
     doc_l = docx.Document(out_letter_path)
-    prev_was_list_l = False
-    prev_was_sub_l = False
-
     for p in doc_l.paragraphs:
         text = p.text.strip()
         if not text:
             continue
             
-        # 📌 ล็อกตราครุฑและโครงสร้าง Template ไม่ให้เด้ง: ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลักเท่านั้น
-        is_body_text = False
-        if (
-            list_pattern.match(text) or
-            text.startswith("ตามอ้างถึง") or
-            text.startswith("จึงขอให้") or
-            text.startswith("จึงเรียนมา") or
-            text.startswith("ด้วย") or
-            text.startswith("รายละเอียดตามใบแจ้ง") or
-            "ดังนี้:" in text
-        ):
-            is_body_text = True
-
-        if is_body_text:
-            p.paragraph_format.line_spacing = 0.90
-            
-        match = list_pattern.match(text)
-        if match:
-            is_sub = match.group(2) is not None
-            if not prev_was_list_l:
-                p.paragraph_format.space_before = Pt(6) # 📌 เริ่มรายการใหม่ ดีดออก 6 PT 
-            else:
-                if not is_sub and prev_was_sub_l:
-                    p.paragraph_format.space_before = Pt(6) # 📌 จบข้อย่อย(1.2) กลับมาขึ้นข้อหลัก(2.) ดีดออก 6 PT
-                else:
-                    p.paragraph_format.space_before = Pt(0)
-            
-            p.paragraph_format.space_after = Pt(0)
-            prev_was_list_l = True
-            prev_was_sub_l = is_sub
-        else:
-            if prev_was_list_l:
-                p.paragraph_format.space_before = Pt(6) # 📌 จบกลุ่มรายการ กลับมาที่ข้อความปกติ ดีดออก 6 PT
-            prev_was_list_l = False
-            prev_was_sub_l = False
+        # 📌 ถ้าเจอคำว่า "ดังนี้:" ให้เคาะเว้นล่าง 6 PT ทันที
+        if "ดังนี้:" in text:
+            p.paragraph_format.space_after = Pt(6)
 
         if (
             text.startswith("ตามอ้างถึง")
@@ -696,52 +665,16 @@ def generate_documents_process(
 
     doc_l.save(out_letter_path)
 
-    # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
+    # === จัดการบันทึกข้อความ (Memo) ===
     doc_m = docx.Document(out_memo_path)
-    prev_was_list_m = False
-    prev_was_sub_m = False
-
     for p in doc_m.paragraphs:
         text = p.text.strip()
         if not text:
             continue
             
-        # 📌 ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลัก
-        is_body_m = False
-        if (
-            list_pattern.match(text) or
-            text.startswith("จึงเรียนมา") or
-            text.startswith("เพื่อลงชื่อ") or
-            text.startswith("เพื่อโปรด") or
-            text.startswith("ด้วย") or
-            text.startswith("ตามอ้างถึง") or
-            text.startswith("รายละเอียดตามใบแจ้ง") or
-            "ดังนี้:" in text
-        ):
-            is_body_m = True
-
-        if is_body_m:
-            p.paragraph_format.line_spacing = 0.90
-            
-        match = list_pattern.match(text)
-        if match:
-            is_sub = match.group(2) is not None
-            if not prev_was_list_m:
-                p.paragraph_format.space_before = Pt(6)
-            else:
-                if not is_sub and prev_was_sub_m:
-                    p.paragraph_format.space_before = Pt(6)
-                else:
-                    p.paragraph_format.space_before = Pt(0)
-                    
-            p.paragraph_format.space_after = Pt(0)
-            prev_was_list_m = True
-            prev_was_sub_m = is_sub
-        else:
-            if prev_was_list_m:
-                p.paragraph_format.space_before = Pt(6)
-            prev_was_list_m = False
-            prev_was_sub_m = False
+        # 📌 ถ้าเจอคำว่า "ดังนี้:" ให้เคาะเว้นล่าง 6 PT ทันที
+        if "ดังนี้:" in text:
+            p.paragraph_format.space_after = Pt(6)
 
         if (
             re.match(r"^[๑-๙]\.\s", text)
@@ -769,12 +702,12 @@ def generate_documents_process(
     def make_copy_doc(src_path, dest_path, doc_type):
         doc_copy = docx.Document(src_path)
 
-        # ปั๊มคำว่า "สำเนาคู่ฉบับ" ไว้บนสุด (เหนือตราครุฑ) กึ่งกลางหน้ากระดาษ
+        # ปั๊มคำว่า "สำเนาคู่ฉบับ" ชิดขวา (ขยายฟอนต์และดันไปหลบตราครุฑ)
         p_top = doc_copy.paragraphs[0].insert_paragraph_before()
-        p_top.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_top.alignment = WD_ALIGN_PARAGRAPH.RIGHT 
         run_top = p_top.add_run("สำเนาคู่ฉบับ")
         run_top.font.name = 'TH SarabunPSK'
-        run_top.font.size = Pt(16)
+        run_top.font.size = Pt(22) 
         run_top.font.bold = True
 
         # 1. ค้นหาจุดตัดเพื่อลบลายเซ็นด้านล่าง
