@@ -661,8 +661,8 @@ def generate_documents_process(
         )
 
       # 📌 แยก "ดังนี้:" ด้วย \a เพื่อเว้นล่าง 6 PT และเชื่อม 1.1, 1.2 ให้ติดกันในย่อหน้าเดียวด้วย \t\n เหมือนต้นฉบับ!
-      part_details_letter = "ดังนี้:\a" + "".join(list_letter).lstrip("\n").replace("\n", "\t\n")
-      part_details_memo = "ดังนี้:\a" + "\n".join(list_memo).lstrip("\n").replace("\n", "\t\n")
+      part_details_letter = "ดังนี้:\a" + "".join(list_letter).lstrip("\n").
+      part_details_memo = "ดังนี้:\a" + "\n".join(list_memo).lstrip("\n").
 
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
@@ -871,7 +871,7 @@ def generate_documents_process(
         doc_copy = docx.Document(src_path)
 
         # ✅ FIX ② : ปั๊ม "สำเนาคู่ฉบับ" กลางบนสุดเหนือตราครุฑ แบบลอย ไม่ดันเนื้อหาลงเลย
-        stamp_copy_label(doc_copy, "สำเนาคู่ฉบับ", size_pt=18, top_pt=20)
+        stamp_copy_label(doc_copy, "สำเนาคู่ฉบับ", size_pt=20, top_pt=22)
 
         # 1. ค้นหาจุดตัดเพื่อลบลายเซ็นด้านล่าง
         delete_start_idx = -1
@@ -898,9 +898,9 @@ def generate_documents_process(
             doc_copy.add_paragraph() 
 
         footer_texts = [
-            f"ร.ต.......................................................ร่าง..................................{short_date}",
-            f"จ.ต...................................................พิมพ์/ทาน............................{short_date}",
-            f"ร.ท......................................................ตรวจ..................................{short_date}"
+            f"ร.ต................................ร่าง..........................{short_date}",
+            f"   ..............................พิมพ์/ทาน.......................{short_date}",
+            f"ร.ท...............................ตรวจ..........................{short_date}"
         ]
 
         for text in footer_texts:
