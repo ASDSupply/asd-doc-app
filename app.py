@@ -661,8 +661,8 @@ def generate_documents_process(
         )
 
       # 📌 แยก "ดังนี้:" ด้วย \a เพื่อเว้นล่าง 6 PT และเชื่อม 1.1, 1.2 ให้ติดกันในย่อหน้าเดียวด้วย \t\n เหมือนต้นฉบับ!
-      part_details_letter = "ดังนี้:\a" + "".join(list_letter).lstrip("\n").
-      part_details_memo = "ดังนี้:\a" + "\n".join(list_memo).lstrip("\n").
+      part_details_letter = "ดังนี้:\a" + "".join(list_letter).lstrip("\n")
+      part_details_memo = "ดังนี้:\a" + "\n".join(list_memo).lstrip("\n")
 
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
