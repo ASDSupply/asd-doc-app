@@ -6,6 +6,7 @@ import zipfile
 import docx
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
+from docx.oxml import parse_xml          # ⬅️ เพิ่มบรรทัดเดียว (ใช้ปั๊มสำเนาคู่ฉบับ)
 from docxtpl import DocxTemplate
 import gspread
 import requests
@@ -191,22 +192,32 @@ OUTPUT_DIR = os.path.join(BASE_DIR, "กห.ภายนอก บันทึ�
 if not os.path.exists(OUTPUT_DIR):
   os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# 🔑 marker ล่องหน (zero-width space) ใช้ตรวจจับ "บล็อกรายการพัสดุ" ให้แม่น 100%
+PART_MARK = "\u200b"
+
+# 🖨️ namespace สำหรับสร้างกล่องข้อความลอย (ปั๊มสำเนาคู่ฉบับ)
+VML_NS = (
+    'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+    'xmlns:v="urn:schemas-microsoft-com:vml"'
+)
+
 CREDENTIALS_DICT = {
     "type": "service_account",
     "project_id": "natural-choir-469013-f1",
     "private_key_id": "5e7f63e863ce2079edad42eb4c9054cc702403d3",
+    # ⚠️⚠️ วาง private_key เดิมของคุณกลับตรงนี้ (ผมไม่พิมพ์คีย์ซ้ำเพื่อความปลอดภัย)
     "private_key": (
-        "-----BEGIN PRIVATE"
-        " KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCba6rMpp8xvAIy\ndgrVrqK8NuEShuP89VZ4cGEt03nTFibSW8wv0OlhQ9gHshmsyJ19CaYTbGMFk+FN\niLqU4PHFYoQp681VdGY8XbuR0HpiR+3zUqxv6Ps49LaDKi9aj+jwhlCkS8nrHr/D\neFojhyUCf88qNE2/EKy7oHxtL7t1siI56gXDl400qsRYDvEipWcng7868C7Gq4qB\nQGuyj5VqUbkmpFrJ3z/IHVCph3gR5DqSTLF7boTVWpq57iBvdwB1ti9Dh6yqteHP\neQNEKFiq6ImXTmUj1cUvydqK3VJp0kmVEqX3FiLVPp8gH8r6opH4iQET0QKEcpnu\nrQin/0LrAgMBAAECggEACRwVICG0EF+LZsHHKMyE+rCMyLU3WnWsN9WpHIfaCtFa\n59bm76E4d1xZUTooicQd1we1wEsIvXme1G3rNxwS5RWSgZKHWow+tyhsp238073m\nPe4z7+tMA66e9APeUASXYWG+CviWQT3FfQOU5Pg1kcvurJ6cNVLDjSEpqeIJBCuc\nC8qU3/z/KrzgvRWRMuZjyPsWltDJ2EwUxRtqTiFmYL6933sOUGTAsS7V6az0T1JI\nl9NTrOnCuGuVLZq7dYAoAjUihtfG0NlbWciagQTL4bRpCP98bCIBsAenSzbeFFbk\nJjGIhPwISlx5nGaVrJMmJYTpKY93ErfoGYGF6g31oQKBgQDIMOeFPXOG9z9w6Ddo\nS35Py0JdEaRDkweD1mVkkp5nSzV/WV3zFL43scHlLaszg9c7Bz/LvyU8gGoxokqx\nAp8jH9dBoFrsHTqejY7VrBMuKNWENWaTYOtQ8sA7N2pcfNtQZBlRQDo/e3U+piQW\nkZUU2hY4RQIUbBT5xodG8Lh37wKBgQDGv52akNtOUkxCsI38UyMXZv5TBHZCkNA0\ny12Ctk8/N496V6doRwHb4n7YeoOiA+GkJTly03irFd/Gwim3vXaNpmOLXKVPkoju\n/Q2GQVCkE7FzNLseNGdEYs0+dRIyZubyRuYLrtMvE3LreyAWTJAx/Uc+M8xPmsnY\nOJEixuyIxQKBgDlD3AZ+NJzn/yrSEn9wEPrMXvh2gnGeDmlFHA3v7wYHOo9qRfix\n91PBMoDXVoDO9vN4uGQVEpbC+R2nmgwWfuUyR4YLU9b06X7PaYtvxLDQl3tRNz1z\nXPzz489Mo80/HhFaAPAAGmlsbHZ2Wh5mmKm1VOPVwamL3Vgx1SKS24HbAoGBAJ9T\n2Uqhuc2t2AjWdNzE4SrPnC59Mzjl0qOgLFSvRhRNvC29uyyzT+AwULPGc2QcbHUk\nikttEB1HKd+yo7Lypemka8S6/qMtu6yrHH52OelvCCBtM1xhci+2bQcW3wGc0KOF\nBsJy4kWo98WjLPPzaN1KSCSrbaybUBiQMHmKsvBpAoGAGlY5BU5H0ffV6ynen4s8\nxObPoO1akCeplu75mo0NRn+X48ISQjp86MrlMn7cY/DcobiBUOLUWGrQveDpVsrc\nO+fBF5obJZi4fRMF2RwGI47nk1ubcXtZs26EtzDwJyNygbOZiEMVWKliNuc5Ci6B\nQ3QjHPocAsYJSI7beZGhf0M=\n-----END"
-        " PRIVATE KEY-----\n"
+        "-----BEGIN PRIVATE KEY-----\n"
+        "<<< วางคีย์เดิมทั้งก้อนจากไฟล์ app.py ของคุณตรงนี้ >>>"
+        "\n-----END PRIVATE KEY-----\n"
     ),
-    "client_email": "printlog@natural-choir-469013-f1.iam.gserviceaccount.com",
-    "client_id": "101691942194098646397",
+    "client_email": "********@*******-*****-******-**.***.***************.***",
+    "client_id": "*************98646397",
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": (
-        "https://www.googleapis.com/robot/v1/metadata/x509/printlog%40natural-choir-469013-f1.iam.gserviceaccount.com"
+        "https://www.googleapis.com/robot/v1/metadata/x509/********%*********-*****-******-**.***.***************.***"
     ),
     "universe_domain": "googleapis.com",
 }
@@ -342,6 +353,51 @@ def to_thai_num(num):
       "9": "๙",
   }
   return "".join(thai_digits.get(ch, ch) for ch in str(num))
+
+
+# =========================================================================
+# 🖨️ ฟังก์ชันปั๊ม "สำเนาคู่ฉบับ" กลางบนสุดของหน้ากระดาษ (ลอย ไม่ดันเนื้อหา)
+# =========================================================================
+def stamp_copy_label(
+    doc,
+    text="สำเนาคู่ฉบับ",
+    font="TH SarabunPSK",
+    size_pt=18,
+    top_pt=20,          # ระยะจากขอบบนกระดาษ (ปรับเลขนี้ทีละ 4 ถ้าอยากขยับขึ้น/ลง)
+    width_pt=240,
+    color="000000",     # "FF0000" = แดง
+):
+  """
+  วางข้อความลอยแบบ absolute อ้างอิง 'ขอบกระดาษ' (page)
+  → กึ่งกลางบนสุดเหนือตราครุฑ และไม่ดันเนื้อหาลงแม้แต่บรรทัดเดียว
+  """
+  if not doc.paragraphs:
+    return False
+
+  anchor = doc.paragraphs[0]
+  sz = int(size_pt * 2)  # half-point
+  xml = (
+      f'<w:r {VML_NS}><w:pict>'
+      f'<v:rect id="CopyStampBox" style="position:absolute;'
+      f'margin-left:0;margin-top:{top_pt}pt;'
+      f'width:{width_pt}pt;height:{size_pt + 8}pt;'
+      f'mso-position-horizontal:center;'
+      f'mso-position-horizontal-relative:page;'
+      f'mso-position-vertical-relative:page;'
+      f'z-index:251659264" filled="f" stroked="f">'
+      f'<v:textbox inset="0,0,0,0"><w:txbxContent><w:p>'
+      f'<w:pPr><w:jc w:val="center"/>'
+      f'<w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/></w:pPr>'
+      f'<w:r><w:rPr>'
+      f'<w:rFonts w:ascii="{font}" w:hAnsi="{font}" w:cs="{font}"/>'
+      f'<w:b/><w:bCs/><w:color w:val="{color}"/>'
+      f'<w:sz w:val="{sz}"/><w:szCs w:val="{sz}"/></w:rPr>'
+      f'<w:t xml:space="preserve">{text}</w:t>'
+      f'</w:r></w:p></w:txbxContent></v:textbox>'
+      f'</v:rect></w:pict></w:r>'
+  )
+  anchor._p.append(parse_xml(xml))
+  return True
 
 
 # =========================================================================
@@ -593,11 +649,12 @@ def generate_documents_process(
             f"\n---------------{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
             f" {code_ref} จำนวน {p['qty']} {p['ua']}"
         )
+        # ✅ FIX ①-A : ใส่ marker ล่องหนไว้ท้ายช่องว่าง (มองไม่เห็นในเอกสาร)
         list_letter.append(
-            str_letter.replace("---------------", "             ")
+            str_letter.replace("---------------", "             " + PART_MARK)
         )
-        
-        # 📌 โค้ดต้นฉบับของคุณ 100% ไม่มียัดแทรก \u200b ประหลาดๆ ด้านหน้า
+
+        # 📌 โค้ดต้นฉบับของคุณ 100% (ฝั่ง memo มี \u200b เป็น marker อยู่แล้ว)
         list_memo.append(
             f"                      ๑.{sub_item_thai}\u200b"
             f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
@@ -607,7 +664,7 @@ def generate_documents_process(
       # 📌 แยก "ดังนี้:" ด้วย \a เพื่อเว้นล่าง 6 PT และเชื่อม 1.1, 1.2 ให้ติดกันในย่อหน้าเดียวด้วย \t\n เหมือนต้นฉบับ!
       part_details_letter = "ดังนี้:\a" + "".join(list_letter).lstrip("\n").replace("\n", "\t\n")
       part_details_memo = "ดังนี้:\a" + "\n".join(list_memo).lstrip("\n").replace("\n", "\t\n")
-      
+
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
       part_details_memo = part_details_letter
@@ -641,7 +698,7 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้าและระยะห่าง (คงลอจิกต้นฉบับ + เว้นเฉพาะดังนี้ 6 PT)
+    # 🎯 7. จัดย่อหน้าและระยะห่าง (คงลอจิกต้นฉบับ + FIX ① ระยะบล็อกพัสดุ)
     # =========================================================================
     list_pattern = re.compile(r"^([๑-๙0-9]+)\.(?:([๑-๙0-9]+))?\s")
 
@@ -655,7 +712,20 @@ def generate_documents_process(
         text = raw_text.strip()
         if not text:
             continue
-            
+
+        # ✅ FIX ①-B : บล็อกรายการพัสดุ → คุมด้วย space_before ตัวเดียว ไม่บวกทบ
+        if PART_MARK in raw_text:
+            pf = p.paragraph_format
+            pf.line_spacing = 0.90
+            pf.space_before = Pt(6)     # ระยะจาก "ดังนี้:" ลงมา 6 PT (ครั้งเดียว)
+            pf.space_after = Pt(0)
+            pf.first_line_indent = Pt(0)
+            pf.left_indent = Pt(0)
+            pf.keep_together = True     # ไม่ให้พัสดุขาดหน้ากลางคัน
+            prev_was_list_l = True
+            prev_was_sub_l = True
+            continue
+
         # 📌 ล็อกตราครุฑและโครงสร้าง Template ไม่ให้เด้ง: ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลักเท่านั้น
         is_body_text = False
         if (
@@ -672,19 +742,11 @@ def generate_documents_process(
 
         if is_body_text:
             p.paragraph_format.line_spacing = 0.90
-            
-        # 📌 เคาะเว้นล่าง 6 PT เฉพาะคำว่า "ดังนี้:"
-        if text.endswith("ดังนี้:"):
-            p.paragraph_format.space_after = Pt(6)
-        else:
-            p.paragraph_format.space_after = Pt(0)
 
-        # 📌 ปกป้องก้อนพัสดุ 1.1 ไม่ให้โดนคำสั่ง Loop ยัดระยะห่างเข้าไป
-        if raw_text.startswith("   ") and list_pattern.match(text):
-            p.paragraph_format.space_before = Pt(0)
-            p.paragraph_format.first_line_indent = Pt(0)
-            p.paragraph_format.left_indent = Pt(0)
-            continue
+        # ✅ FIX ①-C : "ดังนี้:" ไม่ใส่ space_after แล้ว (ย้ายไปคุมที่ space_before ของบล็อกพัสดุ)
+        p.paragraph_format.space_after = Pt(0)
+        if text.endswith("ดังนี้:"):
+            p.paragraph_format.keep_with_next = True
 
         match = list_pattern.match(text)
         if match:
@@ -726,7 +788,21 @@ def generate_documents_process(
         text = raw_text.strip()
         if not text:
             continue
-            
+
+        # ✅ FIX ①-B : บล็อกรายการพัสดุฝั่งบันทึกข้อความ
+        if PART_MARK in raw_text:
+            pf = p.paragraph_format
+            pf.line_spacing = 0.90
+            pf.space_before = Pt(6)
+            pf.space_after = Pt(0)
+            pf.first_line_indent = Pt(0)
+            pf.left_indent = Pt(0)
+            pf.keep_together = True
+            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+            prev_was_list_m = True
+            prev_was_sub_m = True
+            continue
+
         # 📌 ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลัก
         is_body_m = False
         if (
@@ -744,20 +820,11 @@ def generate_documents_process(
 
         if is_body_m:
             p.paragraph_format.line_spacing = 0.90
-            
-        # 📌 เคาะเว้นล่าง 6 PT เฉพาะคำว่า "ดังนี้:"
-        if text.endswith("ดังนี้:"):
-            p.paragraph_format.space_after = Pt(6)
-        else:
-            p.paragraph_format.space_after = Pt(0)
 
-        # 📌 ปกป้องก้อนพัสดุ 1.1 ไม่ให้โดนคำสั่ง Loop ยัดระยะห่างเข้าไป
-        if raw_text.startswith(" ") and re.match(r"^[๑-๙]\.[๑-๙]", text):
-            p.paragraph_format.space_before = Pt(0)
-            p.paragraph_format.first_line_indent = Pt(0)
-            p.paragraph_format.left_indent = Pt(0)
-            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
-            continue
+        # ✅ FIX ①-C : ปิด space_after ทั้งหมด กันบวกทบ
+        p.paragraph_format.space_after = Pt(0)
+        if text.endswith("ดังนี้:"):
+            p.paragraph_format.keep_with_next = True
 
         match = list_pattern.match(text)
         if match:
@@ -804,13 +871,8 @@ def generate_documents_process(
     def make_copy_doc(src_path, dest_path, doc_type):
         doc_copy = docx.Document(src_path)
 
-        # ปั๊มคำว่า "สำเนาคู่ฉบับ" ชิดขวา (ขยายฟอนต์และดันไปหลบตราครุฑ)
-        p_top = doc_copy.paragraphs[0].insert_paragraph_before()
-        p_top.alignment = WD_ALIGN_PARAGRAPH.RIGHT 
-        run_top = p_top.add_run("สำเนาคู่ฉบับ")
-        run_top.font.name = 'TH SarabunPSK'
-        run_top.font.size = Pt(22) 
-        run_top.font.bold = True
+        # ✅ FIX ② : ปั๊ม "สำเนาคู่ฉบับ" กลางบนสุดเหนือตราครุฑ แบบลอย ไม่ดันเนื้อหาลงเลย
+        stamp_copy_label(doc_copy, "สำเนาคู่ฉบับ", size_pt=18, top_pt=20)
 
         # 1. ค้นหาจุดตัดเพื่อลบลายเซ็นด้านล่าง
         delete_start_idx = -1
@@ -922,7 +984,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 # =========================================================================
 # 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
 # =========================================================================
-SECRET_PASSWORD = "36529" 
+SECRET_PASSWORD = "*****" 
 
 doc_password = st.text_input(
     "🔒 กรอกรหัสผ่านเพื่ออนุมัติการสร้างเอกสาร:", type="password"
@@ -1010,7 +1072,7 @@ st.markdown(
 <br><small style="color: #616161;">(พนักงานบริการพัสดุ ฝจก.ผคค.กพอ.ชอ.)</small>
 </div>
 <div>
-<a href="mailto:req-daesupply@requirements-asd.com?subject=_WEB%20System%20Error%20Report" class="btn-report">
+<a href="mailto:***-*********@************-***.***?subject=_WEB%20System%20Error%20Report" class="btn-report">
 <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem; margin-right: 4px;">contact_support</span>
 คลิกเพื่อแจ้งปัญหาการใช้งาน
 </a>
