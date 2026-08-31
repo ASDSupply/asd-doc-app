@@ -205,19 +205,18 @@ CREDENTIALS_DICT = {
     "type": "service_account",
     "project_id": "natural-choir-469013-f1",
     "private_key_id": "5e7f63e863ce2079edad42eb4c9054cc702403d3",
-    # ⚠️⚠️ วาง private_key เดิมของคุณกลับตรงนี้ (ผมไม่พิมพ์คีย์ซ้ำเพื่อความปลอดภัย)
     "private_key": (
-        "-----BEGIN PRIVATE KEY-----\n"
-        "<<< วางคีย์เดิมทั้งก้อนจากไฟล์ app.py ของคุณตรงนี้ >>>"
-        "\n-----END PRIVATE KEY-----\n"
+        "-----BEGIN PRIVATE"
+        " KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCba6rMpp8xvAIy\ndgrVrqK8NuEShuP89VZ4cGEt03nTFibSW8wv0OlhQ9gHshmsyJ19CaYTbGMFk+FN\niLqU4PHFYoQp681VdGY8XbuR0HpiR+3zUqxv6Ps49LaDKi9aj+jwhlCkS8nrHr/D\neFojhyUCf88qNE2/EKy7oHxtL7t1siI56gXDl400qsRYDvEipWcng7868C7Gq4qB\nQGuyj5VqUbkmpFrJ3z/IHVCph3gR5DqSTLF7boTVWpq57iBvdwB1ti9Dh6yqteHP\neQNEKFiq6ImXTmUj1cUvydqK3VJp0kmVEqX3FiLVPp8gH8r6opH4iQET0QKEcpnu\nrQin/0LrAgMBAAECggEACRwVICG0EF+LZsHHKMyE+rCMyLU3WnWsN9WpHIfaCtFa\n59bm76E4d1xZUTooicQd1we1wEsIvXme1G3rNxwS5RWSgZKHWow+tyhsp238073m\nPe4z7+tMA66e9APeUASXYWG+CviWQT3FfQOU5Pg1kcvurJ6cNVLDjSEpqeIJBCuc\nC8qU3/z/KrzgvRWRMuZjyPsWltDJ2EwUxRtqTiFmYL6933sOUGTAsS7V6az0T1JI\nl9NTrOnCuGuVLZq7dYAoAjUihtfG0NlbWciagQTL4bRpCP98bCIBsAenSzbeFFbk\nJjGIhPwISlx5nGaVrJMmJYTpKY93ErfoGYGF6g31oQKBgQDIMOeFPXOG9z9w6Ddo\nS35Py0JdEaRDkweD1mVkkp5nSzV/WV3zFL43scHlLaszg9c7Bz/LvyU8gGoxokqx\nAp8jH9dBoFrsHTqejY7VrBMuKNWENWaTYOtQ8sA7N2pcfNtQZBlRQDo/e3U+piQW\nkZUU2hY4RQIUbBT5xodG8Lh37wKBgQDGv52akNtOUkxCsI38UyMXZv5TBHZCkNA0\ny12Ctk8/N496V6doRwHb4n7YeoOiA+GkJTly03irFd/Gwim3vXaNpmOLXKVPkoju\n/Q2GQVCkE7FzNLseNGdEYs0+dRIyZubyRuYLrtMvE3LreyAWTJAx/Uc+M8xPmsnY\nOJEixuyIxQKBgDlD3AZ+NJzn/yrSEn9wEPrMXvh2gnGeDmlFHA3v7wYHOo9qRfix\n91PBMoDXVoDO9vN4uGQVEpbC+R2nmgwWfuUyR4YLU9b06X7PaYtvxLDQl3tRNz1z\nXPzz489Mo80/HhFaAPAAGmlsbHZ2Wh5mmKm1VOPVwamL3Vgx1SKS24HbAoGBAJ9T\n2Uqhuc2t2AjWdNzE4SrPnC59Mzjl0qOgLFSvRhRNvC29uyyzT+AwULPGc2QcbHUk\nikttEB1HKd+yo7Lypemka8S6/qMtu6yrHH52OelvCCBtM1xhci+2bQcW3wGc0KOF\nBsJy4kWo98WjLPPzaN1KSCSrbaybUBiQMHmKsvBpAoGAGlY5BU5H0ffV6ynen4s8\nxObPoO1akCeplu75mo0NRn+X48ISQjp86MrlMn7cY/DcobiBUOLUWGrQveDpVsrc\nO+fBF5obJZi4fRMF2RwGI47nk1ubcXtZs26EtzDwJyNygbOZiEMVWKliNuc5Ci6B\nQ3QjHPocAsYJSI7beZGhf0M=\n-----END"
+        " PRIVATE KEY-----\n"
     ),
-    "client_email": "********@*******-*****-******-**.***.***************.***",
-    "client_id": "*************98646397",
+    "client_email": "printlog@natural-choir-469013-f1.iam.gserviceaccount.com",
+    "client_id": "101691942194098646397",
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": (
-        "https://www.googleapis.com/robot/v1/metadata/x509/********%*********-*****-******-**.***.***************.***"
+        "https://www.googleapis.com/robot/v1/metadata/x509/printlog%40natural-choir-469013-f1.iam.gserviceaccount.com"
     ),
     "universe_domain": "googleapis.com",
 }
@@ -984,7 +983,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 # =========================================================================
 # 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
 # =========================================================================
-SECRET_PASSWORD = "*****" 
+SECRET_PASSWORD = "36529" 
 
 doc_password = st.text_input(
     "🔒 กรอกรหัสผ่านเพื่ออนุมัติการสร้างเอกสาร:", type="password"
@@ -1072,7 +1071,7 @@ st.markdown(
 <br><small style="color: #616161;">(พนักงานบริการพัสดุ ฝจก.ผคค.กพอ.ชอ.)</small>
 </div>
 <div>
-<a href="mailto:***-*********@************-***.***?subject=_WEB%20System%20Error%20Report" class="btn-report">
+<a href="mailto:req-daesupply@requirements-asd.com?subject=_WEB%20System%20Error%20Report" class="btn-report">
 <span class="material-icons" style="vertical-align: middle; font-size: 1.1rem; margin-right: 4px;">contact_support</span>
 คลิกเพื่อแจ้งปัญหาการใช้งาน
 </a>
