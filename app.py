@@ -597,16 +597,16 @@ def generate_documents_process(
             str_letter.replace("---------------", "             ")
         )
         
-        # 📌 ล็อก 22 เคาะ และใส่ \u200b ป้องกันการโดนโปรแกรมแทรกแซงระยะห่าง
+        # 📌 โค้ดต้นฉบับของคุณ 100% ไม่มียัดแทรก \u200b ประหลาดๆ ด้านหน้า
         list_memo.append(
-            f"\u200b                      ๑.{sub_item_thai}\u200b"
+            f"                      ๑.{sub_item_thai}\u200b"
             f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
             f" {p['ua']}"
         )
 
-      # 📌 แยกคำว่า "ดังนี้:" ออกจากข้อ 1.1 ด้วยการตัดย่อหน้า (\a) เพื่อให้เคาะเว้น 6 PT ได้
+      # 📌 แยก "ดังนี้:" ด้วย \a เพื่อเว้นล่าง 6 PT และเชื่อม 1.1, 1.2 ให้ติดกันในย่อหน้าเดียวด้วย \t\n เหมือนต้นฉบับ!
       part_details_letter = "ดังนี้:\a" + "".join(list_letter).lstrip("\n").replace("\n", "\t\n")
-      part_details_memo = "ดังนี้:\a" + "\t\n".join(list_memo)
+      part_details_memo = "ดังนี้:\a" + "\n".join(list_memo).lstrip("\n").replace("\n", "\t\n")
       
     else:
       part_details_letter = f"รายละเอียดตามใบแจ้งความต้องการเลขที่ {unique_id}"
@@ -641,18 +641,69 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้า (คืนค่าลอจิกต้นฉบับ 100% เพิ่มแค่เงื่อนไขเว้นล่าง 6 PT หลังคำว่าดังนี้)
+    # 🎯 7. จัดย่อหน้าและระยะห่าง (คงลอจิกต้นฉบับ + เว้นเฉพาะดังนี้ 6 PT)
     # =========================================================================
+    list_pattern = re.compile(r"^([๑-๙0-9]+)\.(?:([๑-๙0-9]+))?\s")
+
     # === จัดการหนังสือภายนอก (Letter) ===
     doc_l = docx.Document(out_letter_path)
+    prev_was_list_l = False
+    prev_was_sub_l = False
+
     for p in doc_l.paragraphs:
-        text = p.text.strip()
+        raw_text = p.text
+        text = raw_text.strip()
         if not text:
             continue
             
-        # 📌 ถ้าเจอคำว่า "ดังนี้:" ให้เคาะเว้นล่าง 6 PT ทันที
-        if "ดังนี้:" in text:
+        # 📌 ล็อกตราครุฑและโครงสร้าง Template ไม่ให้เด้ง: ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลักเท่านั้น
+        is_body_text = False
+        if (
+            list_pattern.match(text) or
+            text.startswith("ตามอ้างถึง") or
+            text.startswith("จึงขอให้") or
+            text.startswith("จึงเรียนมา") or
+            text.startswith("ด้วย") or
+            text.startswith("รายละเอียดตามใบแจ้ง") or
+            "ดังนี้:" in text or
+            re.match(r"^[๑-๙]\.[๑-๙]", text)
+        ):
+            is_body_text = True
+
+        if is_body_text:
+            p.paragraph_format.line_spacing = 0.90
+            
+        # 📌 เคาะเว้นล่าง 6 PT เฉพาะคำว่า "ดังนี้:"
+        if text.endswith("ดังนี้:"):
             p.paragraph_format.space_after = Pt(6)
+        else:
+            p.paragraph_format.space_after = Pt(0)
+
+        # 📌 ปกป้องก้อนพัสดุ 1.1 ไม่ให้โดนคำสั่ง Loop ยัดระยะห่างเข้าไป
+        if raw_text.startswith("   ") and list_pattern.match(text):
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.first_line_indent = Pt(0)
+            p.paragraph_format.left_indent = Pt(0)
+            continue
+
+        match = list_pattern.match(text)
+        if match:
+            is_sub = match.group(2) is not None
+            if not prev_was_list_l:
+                p.paragraph_format.space_before = Pt(6) 
+            else:
+                if not is_sub and prev_was_sub_l:
+                    p.paragraph_format.space_before = Pt(6) 
+                else:
+                    p.paragraph_format.space_before = Pt(0)
+            
+            prev_was_list_l = True
+            prev_was_sub_l = is_sub
+        else:
+            if prev_was_list_l:
+                p.paragraph_format.space_before = Pt(6) 
+            prev_was_list_l = False
+            prev_was_sub_l = False
 
         if (
             text.startswith("ตามอ้างถึง")
@@ -665,16 +716,67 @@ def generate_documents_process(
 
     doc_l.save(out_letter_path)
 
-    # === จัดการบันทึกข้อความ (Memo) ===
+    # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
     doc_m = docx.Document(out_memo_path)
+    prev_was_list_m = False
+    prev_was_sub_m = False
+
     for p in doc_m.paragraphs:
-        text = p.text.strip()
+        raw_text = p.text
+        text = raw_text.strip()
         if not text:
             continue
             
-        # 📌 ถ้าเจอคำว่า "ดังนี้:" ให้เคาะเว้นล่าง 6 PT ทันที
-        if "ดังนี้:" in text:
+        # 📌 ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลัก
+        is_body_m = False
+        if (
+            list_pattern.match(text) or
+            text.startswith("จึงเรียนมา") or
+            text.startswith("เพื่อลงชื่อ") or
+            text.startswith("เพื่อโปรด") or
+            text.startswith("ด้วย") or
+            text.startswith("ตามอ้างถึง") or
+            text.startswith("รายละเอียดตามใบแจ้ง") or
+            "ดังนี้:" in text or
+            re.match(r"^[๑-๙]\.[๑-๙]", text)
+        ):
+            is_body_m = True
+
+        if is_body_m:
+            p.paragraph_format.line_spacing = 0.90
+            
+        # 📌 เคาะเว้นล่าง 6 PT เฉพาะคำว่า "ดังนี้:"
+        if text.endswith("ดังนี้:"):
             p.paragraph_format.space_after = Pt(6)
+        else:
+            p.paragraph_format.space_after = Pt(0)
+
+        # 📌 ปกป้องก้อนพัสดุ 1.1 ไม่ให้โดนคำสั่ง Loop ยัดระยะห่างเข้าไป
+        if raw_text.startswith(" ") and re.match(r"^[๑-๙]\.[๑-๙]", text):
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.first_line_indent = Pt(0)
+            p.paragraph_format.left_indent = Pt(0)
+            p.alignment = WD_ALIGN_PARAGRAPH.THAI_JUSTIFY
+            continue
+
+        match = list_pattern.match(text)
+        if match:
+            is_sub = match.group(2) is not None
+            if not prev_was_list_m:
+                p.paragraph_format.space_before = Pt(6)
+            else:
+                if not is_sub and prev_was_sub_m:
+                    p.paragraph_format.space_before = Pt(6)
+                else:
+                    p.paragraph_format.space_before = Pt(0)
+                    
+            prev_was_list_m = True
+            prev_was_sub_m = is_sub
+        else:
+            if prev_was_list_m:
+                p.paragraph_format.space_before = Pt(6)
+            prev_was_list_m = False
+            prev_was_sub_m = False
 
         if (
             re.match(r"^[๑-๙]\.\s", text)
