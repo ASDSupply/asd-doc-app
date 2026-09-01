@@ -881,7 +881,8 @@ def generate_documents_process(
         to_remove = []
 
         if doc_type == "memo":
-            paras = list(iter_all_paragraphs(doc_copy))   # ✅ ใหม่
+            paras = list(doc_copy.paragraphs)
+
 
 
             sign_idx = -1              # index ของ "หน.ผคค.กพอ.ชอ."
@@ -920,14 +921,14 @@ def generate_documents_process(
             # หนังสือภายนอก : น.อ. / น.อ. / น.อ.
             footer_texts = [
                 f"น.อ. ................ ร่าง ......... {short_date}",
-                f"น.อ. ................ พิมพ์/ทาน ......... {short_date}",
+                f"จ.อ./นาย .............พิมพ์/ทาน ......... {short_date}",
                 f"น.อ. ................ ตรวจ ......... {short_date}",
             ]
         else:
             # บันทึกข้อความ (ภายใน) : ร.ต. / ร.ต. / ร.ท.
             footer_texts = [
                 f"ร.ต. ................ ร่าง ......... {short_date}",
-                f"ร.ต. ................ พิมพ์/ทาน ......... {short_date}",
+                f"จ.อ./นาย .............พิมพ์/ทาน ......... {short_date}",
                 f"ร.ท. ................ ตรวจ ......... {short_date}",
             ]
 
