@@ -894,19 +894,29 @@ def generate_documents_process(
                 p_element.getparent().remove(p_element)
                 p._element, p._p = None, None
 
-        # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบชิดขวาสุด
-        for _ in range(4):  # เคาะบรรทัดว่างดันข้อความลงมาหน่อย
-            doc_copy.add_paragraph() 
+                # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบชิดขวาสุด (ดันลงล่างสุดของหน้า)
+        for _ in range(8):   # เดิม 4 → เพิ่มเป็น 8 เคาะให้ลงล่างสุด
+            doc_copy.add_paragraph()
 
-        footer_texts = [
-            f"ร.ต..............................ร่าง.......................{short_date}",
-            f"   ............................พิมพ์/ทาน....................{short_date}",
-            f"ร.ท.............................ตรวจ.......................{short_date}"
-        ]
+        # 🔻 แยกยศตามชนิดหนังสือ
+        if doc_type == "letter":
+            # หนังสือภายนอก : น.อ. / น.อ. / น.อ.
+            footer_texts = [
+                f"น.อ. ................ ร่าง ......... {short_date}",
+                f"น.อ. ................ พิมพ์/ทาน ......... {short_date}",
+                f"น.อ. ................ ตรวจ ......... {short_date}",
+            ]
+        else:
+            # บันทึกข้อความ (ภายใน) : ร.ต. / ร.ต. / ร.ท.
+            footer_texts = [
+                f"ร.ต. ................ ร่าง ......... {short_date}",
+                f"ร.ต. ................ พิมพ์/ทาน ......... {short_date}",
+                f"ร.ท. ................ ตรวจ ......... {short_date}",
+            ]
 
         for text in footer_texts:
             p_foot = doc_copy.add_paragraph()
-            p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT # ดันชิดขวาสุดของหน้ากระดาษ
+            p_foot.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             run_foot = p_foot.add_run(text)
             run_foot.font.name = 'TH SarabunPSK'
             run_foot.font.size = Pt(16)
