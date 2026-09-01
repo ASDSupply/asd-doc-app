@@ -716,7 +716,7 @@ def generate_documents_process(
         # ✅ FIX ①-B : บล็อกรายการพัสดุ → คุมด้วย space_before ตัวเดียว ไม่บวกทบ
         if PART_MARK in raw_text:
             pf = p.paragraph_format
-            pf.line_spacing = 0.90
+            pf.line_spacing = 1.0
             pf.space_before = Pt(6)     # ระยะจาก "ดังนี้:" ลงมา 6 PT (ครั้งเดียว)
             pf.space_after = Pt(0)
             pf.first_line_indent = Pt(0)
@@ -741,7 +741,7 @@ def generate_documents_process(
             is_body_text = True
 
         if is_body_text:
-            p.paragraph_format.line_spacing = 0.90
+            p.paragraph_format.line_spacing = 1.0
 
         # ✅ FIX ①-C : "ดังนี้:" ไม่ใส่ space_after แล้ว (ย้ายไปคุมที่ space_before ของบล็อกพัสดุ)
         p.paragraph_format.space_after = Pt(0)
@@ -792,7 +792,7 @@ def generate_documents_process(
         # ✅ FIX ①-B : บล็อกรายการพัสดุฝั่งบันทึกข้อความ
         if PART_MARK in raw_text:
             pf = p.paragraph_format
-            pf.line_spacing = 0.90
+            pf.line_spacing = 1.0
             pf.space_before = Pt(6)
             pf.space_after = Pt(0)
             pf.first_line_indent = Pt(0)
@@ -819,7 +819,7 @@ def generate_documents_process(
             is_body_m = True
 
         if is_body_m:
-            p.paragraph_format.line_spacing = 0.90
+            p.paragraph_format.line_spacing = 1.0
 
         # ✅ FIX ①-C : ปิด space_after ทั้งหมด กันบวกทบ
         p.paragraph_format.space_after = Pt(0)
@@ -872,7 +872,7 @@ def generate_documents_process(
         doc_copy = docx.Document(src_path)
 
         # ✅ FIX ② : ปั๊ม "สำเนาคู่ฉบับ" กลางบนสุดเหนือตราครุฑ แบบลอย ไม่ดันเนื้อหาลงเลย
-        stamp_copy_label(doc_copy, "สำเนาคู่ฉบับ", size_pt=20, top_pt=22)
+        stamp_copy_label(doc_copy, "สำเนาคู่ฉบับ", size_pt=32, top_pt=18)
 
         # 1. ค้นหาจุดตัดเพื่อลบลายเซ็นด้านล่าง
         delete_start_idx = -1
@@ -899,9 +899,9 @@ def generate_documents_process(
             doc_copy.add_paragraph() 
 
         footer_texts = [
-            f"ร.ต................................ร่าง.......................{short_date}",
-            f"   ............................  พิมพ์/ทาน....................{short_date}",
-            f"ร.ท...............................ตรวจ.......................{short_date}"
+            f"ร.ต..............................ร่าง.......................{short_date}",
+            f"   ............................พิมพ์/ทาน....................{short_date}",
+            f"ร.ท.............................ตรวจ.......................{short_date}"
         ]
 
         for text in footer_texts:
