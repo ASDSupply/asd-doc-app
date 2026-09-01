@@ -871,34 +871,51 @@ def generate_documents_process(
     def make_copy_doc(src_path, dest_path, doc_type):
         doc_copy = docx.Document(src_path)
 
-        # ✅ FIX ② : ปั๊ม "สำเนาคู่ฉบับ" กลางบนสุดเหนือตราครุฑ แบบลอย ไม่ดันเนื้อหาลงเลย
+        # ✅ FIX ② : ปั๊ม "สำเนาคู่ฉบับ" กลางบนสุดเหนือตราครุฑ แบบลอย
         stamp_copy_label(doc_copy, "สำเนาคู่ฉบับ", size_pt=32, top_pt=18)
 
-        # 1. ค้นหาจุดตัดเพื่อลบลายเซ็นด้านล่าง
-        delete_start_idx = -1
-        for i, p in enumerate(doc_copy.paragraphs):
-            text_no_space = p.text.replace(" ", "").replace("\u200b", "")
-            # ของบันทึกข้อความ: ลบตั้งแต่ใต้คำว่า หน.ผคค.กพอ.ชอ.
-            if doc_type == "memo" and "หน.ผคค.กพอ.ชอ." in text_no_space:
-                delete_start_idx = i + 1 
-                break
-            # ของหนังสือภายนอก: ลบตั้งแต่ใต้คำว่า เจ้ากรมช่างอากาศ
-            elif doc_type == "letter" and "เจ้ากรมช่างอากาศ" in text_no_space:
-                delete_start_idx = i + 1
-                break
+        # =====================================================
+        # 1. เก็บย่อหน้าที่ต้องลบ (เฉพาะ memo เท่านั้น)
+        #    🔻 letter = ไม่ลบอะไรเลย ปั๊มอย่างเดียว (กันเบอร์โทรหาย)
+        # =====================================================
+        to_remove = []
 
-        # 2. หั่นย่อหน้าตั้งแต่จุดตัดลงไปทิ้งทั้งหมด
-        if delete_start_idx != -1 and delete_start_idx < len(doc_copy.paragraphs):
-            for p in doc_copy.paragraphs[delete_start_idx:]:
-                p_element = p._element
-                p_element.getparent().remove(p_element)
-                p._element, p._p = None, None
+        if doc_type == "memo":
+            paras = list(iter_all_paragraphs(doc_copy))   # ✅ ใหม่
 
-                # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" แบบชิดขวาสุด (ดันลงล่างสุดของหน้า)
-        for _ in range(8):   # เดิม 4 → เพิ่มเป็น 8 เคาะให้ลงล่างสุด
+
+            sign_idx = -1              # index ของ "หน.ผคค.กพอ.ชอ."
+            greet_indexes = []         # index ทุกจุดที่เจอ "เรียน จก.ชอ."
+
+            for i, p in enumerate(paras):
+                t = p.text.replace(" ", "").replace("\u200b", "")
+                if sign_idx == -1 and "หน.ผคค.กพอ.ชอ." in t:
+                    sign_idx = i
+                if "เรียนจก.ชอ." in t:
+                    greet_indexes.append(i)
+
+            for i, p in enumerate(paras):
+                # (ก) ทุกอย่างใต้ตำแหน่ง หน.ผคค.กพอ.ชอ.
+                if sign_idx != -1 and i > sign_idx:
+                    to_remove.append(p)
+                    continue
+                # (ข) "เรียน จก.ชอ." ที่ค้างท้าย — เก็บอันแรก (หัวกระดาษ) ไว้
+                if len(greet_indexes) > 1 and i in greet_indexes[1:]:
+                    to_remove.append(p)
+
+        # 2. หั่นทิ้งจริง
+        for p in to_remove:
+            p_element = p._element
+            p_element.getparent().remove(p_element)
+            p._element, p._p = None, None
+
+        # =====================================================
+        # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" ชิดขวา ดันลงล่างสุด
+        # =====================================================
+        blank_lines = 2 if doc_type == "letter" else 8   # 🔻 ปรับตรงนี้
+        for _ in range(blank_lines):
             doc_copy.add_paragraph()
 
-        # 🔻 แยกยศตามชนิดหนังสือ
         if doc_type == "letter":
             # หนังสือภายนอก : น.อ. / น.อ. / น.อ.
             footer_texts = [
