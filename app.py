@@ -892,14 +892,14 @@ def generate_documents_process(
                 t = p.text.replace(" ", "").replace("\u200b", "")
                 if sign_idx == -1 and "หน.ผคค.กพอ.ชอ." in t:
                     sign_idx = i
-                if "เรียนจก.ชอ." in t:
+                if "เรียน จก.ชอ." in t:
                     greet_indexes.append(i)
         
-      # หา "เรียนจก.ชอ." จุดแรก เพื่อใช้เป็นจุดเริ่มลบ
+      # หา "เรียน จก.ชอ." จุดแรก เพื่อใช้เป็นจุดเริ่มลบ
         first_greet_idx = greet_indexes[0] if greet_indexes else -1
 
         for i, p in enumerate(paras):
-        # ลบตั้งแต่ "เรียนจก.ชอ." ลงไปทั้งหมด
+        # ลบตั้งแต่ "เรียน จก.ชอ." ลงไปทั้งหมด
         # แต่เก็บบรรทัด "หน.ผคค.กพอ.ชอ." ไว้
             if first_greet_idx != -1 and i >= first_greet_idx and i != sign_idx:
                 to_remove.append(p)
