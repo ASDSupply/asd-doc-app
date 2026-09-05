@@ -894,15 +894,16 @@ def generate_documents_process(
                     sign_idx = i
                 if "เรียนจก.ชอ." in t:
                     greet_indexes.append(i)
+        
+      # หา "เรียนจก.ชอ." จุดแรก เพื่อใช้เป็นจุดเริ่มลบ
+        first_greet_idx = greet_indexes[0] if greet_indexes else -1
 
-            for i, p in enumerate(paras):
-                # (ก) ทุกอย่างใต้ตำแหน่ง หน.ผคค.กพอ.ชอ.
-                if sign_idx != -1 and i > sign_idx:
-                    to_remove.append(p)
-                    continue
-                # (ข) "เรียน จก.ชอ." ที่ค้างท้าย — เก็บอันแรก (หัวกระดาษ) ไว้
-                if len(greet_indexes) > 1 and i in greet_indexes[1:]:
-                    to_remove.append(p)
+        for i, p in enumerate(paras):
+        # ลบตั้งแต่ "เรียนจก.ชอ." ลงไปทั้งหมด
+        # แต่เก็บบรรทัด "หน.ผคค.กพอ.ชอ." ไว้
+            if first_greet_idx != -1 and i >= first_greet_idx and i != sign_idx:
+                to_remove.append(p)
+
 
         # 2. หั่นทิ้งจริง
         for p in to_remove:
