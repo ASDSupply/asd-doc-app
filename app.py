@@ -878,15 +878,12 @@ def generate_documents_process(
         # 1. เก็บย่อหน้าที่ต้องลบ (เฉพาะ memo เท่านั้น)
         #    🔻 letter = ไม่ลบอะไรเลย ปั๊มอย่างเดียว (กันเบอร์โทรหาย)
         # =====================================================
-        to_remove = []
-
         if doc_type == "memo":
             paras = list(doc_copy.paragraphs)
+            to_remove = []
 
-
-
-            sign_idx = -1              # index ของ "หน.ผคค.กพอ.ชอ."
-            greet_indexes = []         # index ทุกจุดที่เจอ "เรียน จก.ชอ."
+            sign_idx = -1  # index ของ "หน.ผคค.กพอ.ชอ."
+            greet_indexes = []  # index ทุกจุดที่เจอ "เรียน จก.ชอ."
 
             for i, p in enumerate(paras):
                 t = p.text.replace(" ", "").replace("\u200b", "")
@@ -894,22 +891,25 @@ def generate_documents_process(
                     sign_idx = i
                 if "เรียน จก.ชอ." in t:
                     greet_indexes.append(i)
-        
-      # หา "เรียน จก.ชอ." จุดแรก เพื่อใช้เป็นจุดเริ่มลบ
-        first_greet_idx = greet_indexes[0] if greet_indexes else -1
 
-        for i, p in enumerate(paras):
-        # ลบตั้งแต่ "เรียน จก.ชอ." ลงไปทั้งหมด
-        # แต่เก็บบรรทัด "หน.ผคค.กพอ.ชอ." ไว้
-            if first_greet_idx != -1 and i >= first_greet_idx and i != sign_idx:
-                to_remove.append(p)
+            # หา "เรียน จก.ชอ." จุดแรก เพื่อใช้เป็นจุดเริ่มลบ
+            first_greet_idx = greet_indexes[0] if greet_indexes else -1
 
+            for i, p in enumerate(paras):
+                # ลบตั้งแต่ "เรียน จก.ชอ." ลงไปทั้งหมด
+                # แต่เก็บบรรทัด "หน.ผคค.กพอ.ชอ." ไว้
+                if (
+                    first_greet_idx != -1
+                    and i >= first_greet_idx
+                    and i != sign_idx
+                ):
+                    to_remove.append(p)
 
-        # 2. หั่นทิ้งจริง
-        for p in to_remove:
-            p_element = p._element
-            p_element.getparent().remove(p_element)
-            p._element, p._p = None, None
+            # 2. หั่นทิ้งจริง (อยู่ภายในบล็อก memo)
+            for p in to_remove:
+                p_element = p._element
+                p_element.getparent().remove(p_element)
+                p._element, p._p = None, None
 
         # =====================================================
         # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" ชิดขวา ดันลงล่างสุด
