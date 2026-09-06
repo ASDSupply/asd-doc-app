@@ -889,7 +889,7 @@ def generate_documents_process(
                 t = p.text.replace(" ", "").replace("\u200b", "")
                 if sign_idx == -1 and "หน.ผคค.กพอ.ชอ." in t:
                     sign_idx = i
-                if "เรียน จก.ชอ." in t:
+                if t.startswith("เรียนจก.ชอ"):
                     greet_indexes.append(i)
 
             # หา "เรียน จก.ชอ." จุดแรก เพื่อใช้เป็นจุดเริ่มลบ
