@@ -803,7 +803,7 @@ def generate_documents_process(
             prev_was_sub_m = True
             continue
 
-        # 📌 ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลัก
+        # 📌 ปรับระยะบรรทัด 1.0 เฉพาะส่วนที่เป็นเนื้อหาหลัก
         is_body_m = False
         if (
             list_pattern.match(text) or
@@ -889,7 +889,7 @@ def generate_documents_process(
                 t = p.text.replace(" ", "").replace("\u200b", "")
                 if sign_idx == -1 and "หน.ผคค.กพอ.ชอ." in t:
                     sign_idx = i
-                if t.startswith("เรียนจก.ชอ"):
+                if "เรียนจก.ชอ" in t:
                     greet_indexes.append(i)
 
             # หา "เรียน จก.ชอ." จุดแรก เพื่อใช้เป็นจุดเริ่มลบ
