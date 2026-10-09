@@ -493,7 +493,7 @@ def generate_documents_process(
         (i for i, h in enumerate(master_headers) if "P/N" in h or "PN" in h), -1
     )
     idx_nsn = next(
-        (i for i, h in enumerate(master_headers) if "NSN" in h), -1
+        (i for i, h in enumerate(master_headers) if "NSN" in h), -1) 
     idx_sn = next(
         (i for i, h in enumerate(master_headers) if "S/N" in h or ("SN" in h and "NSN" not in h)), -1
     )
