@@ -571,7 +571,7 @@ def generate_documents_process(
             or "NOBID" in price_val
             or price_val == "0"
             or "NO BID" in remark_val
-            or "NOBID" in remark_val
+            or "ไม่มีผู้เสนอราคา" in remark_val
             or "ไม่เสนอราคา" in remark_val
         )
 
@@ -928,8 +928,8 @@ def generate_documents_process(
         else:
             # บันทึกข้อความ (ภายใน) : ร.ต. / ร.ต. / ร.ท.
             footer_texts = [
-                f"ร.ต. ...................................ร่าง ........... {short_date}",
-                f"นาย ...........................พิมพ์/ทาน ......... {short_date}",
+                f"ร.ต. .....................................ร่าง ........... {short_date}",
+                f"นาย ............................พิมพ์/ทาน ......... {short_date}",
                 f"ร.ต. ...................................ตรวจ .......... {short_date}",
             ]
 
