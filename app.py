@@ -1069,7 +1069,7 @@ else:
               else:
                 st.error(f"❌ เกิดข้อผิดพลาด: {message}")
 
-            clean_lp = selected_lp.replace(" (" (เคยสร้างแล้ว)", "")
+            clean_lp = selected_lp.replace(" (เคยสร้างแล้ว)", "")
             with st.spinner("กำลังประมวลผลสร้างเอกสาร..."):
               generate_documents_process(
                   clean_lp, template_mode, web_log, web_finish
