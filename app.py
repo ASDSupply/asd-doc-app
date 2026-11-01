@@ -112,6 +112,23 @@ st.markdown(
             color: #333333;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
         }
+        /* ซ่อน Header, Footer และ Menu Default */
+        #MainMenu {visibility: hidden !important;}
+        header {visibility: hidden !important;}
+        footer {visibility: hidden !important;}
+
+        /* ซ่อน Streamlit Toolbar และ Badge ปุ่มลอยขวาล่างทั้งหมด */
+        [data-testid="stToolbar"] {visibility: hidden !important; height: 0px !important; display: none !important;}
+        [data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
+        [data-testid="stStatusWidget"] {visibility: hidden !important; display: none !important;}
+        .stAppDeployButton {display: none !important;}
+        
+        /* ซ่อนปุ่ม Manage App / Streamlit Icon / Crown Badge */
+        div[class*="viewerBadge"] {display: none !important;}
+        div[class*="styles_viewerBadge"] {display: none !important;}
+        div[class*="stAppViewerBadge"] {display: none !important;}
+        .viewerBadge_container__1QSob {display: none !important;}
+
         .footer-system-title {
             font-size: 1.05rem;
             font-weight: 700;
