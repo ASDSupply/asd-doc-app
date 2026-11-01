@@ -6,14 +6,14 @@ import zipfile
 import docx
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Pt
-from docx.oxml import parse_xml          # ⬅️ เพิ่มบรรทัดเดียว (ใช้ปั๊มสำเนาคู่ฉบับ)
+from docx.oxml import parse_xml
 from docxtpl import DocxTemplate
 import gspread
 import requests
 import streamlit as st
 
 # =========================================================================
-# 📌 STREAMLIT PAGE CONFIG & EXECUTIVE UI STYLING
+# STREAMLIT PAGE CONFIG & UI STYLING
 # =========================================================================
 st.set_page_config(
     page_title="ระบบสร้างหนังสือราชการ (ASD)",
@@ -183,19 +183,16 @@ st.markdown(
 )
 
 # =========================================================================
-# 📌 1. CONSTANTS & SPREADSHEET CONFIG (สมบูรณ์ 100% ห้ามตัดทอน)
+# CONSTANTS & SPREADSHEET CONFIG
 # =========================================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 📂 โฟลเดอร์ปลายทางสำหรับเก็บเอกสารที่สร้างเสร็จแล้ว
 OUTPUT_DIR = os.path.join(BASE_DIR, "กห.ภายนอก บันทึกข้อความ")
 if not os.path.exists(OUTPUT_DIR):
   os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# 🔑 marker ล่องหน (zero-width space) ใช้ตรวจจับ "บล็อกรายการพัสดุ" ให้แม่น 100%
 PART_MARK = "\u200b"
 
-# 🖨️ namespace สำหรับสร้างกล่องข้อความลอย (ปั๊มสำเนาคู่ฉบับ)
 VML_NS = (
     'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
     'xmlns:v="urn:schemas-microsoft-com:vml"'
@@ -231,7 +228,7 @@ MEMO_LP9_URL      = "https://1drv.ms/w/c/3aea505ab7e3838e/IQC2dfosh_q5SIxtTlJ90R
 
 
 # =========================================================================
-# 📌 2. FULL CONSTANT MAPPINGS (ครบถ้วนสมบูรณ์ 100%)
+# FULL CONSTANT MAPPINGS
 # =========================================================================
 FULL_HELICOPTER_NAMES = {
     "S92A": "เฮลิคอปเตอร์แบบที่ ๑๐ (S-92A)",
@@ -356,26 +353,22 @@ def to_thai_num(num):
 
 
 # =========================================================================
-# 🖨️ ฟังก์ชันปั๊ม "สำเนาคู่ฉบับ" กลางบนสุดของหน้ากระดาษ (ลอย ไม่ดันเนื้อหา)
+# COPY STAMP FUNCTION
 # =========================================================================
 def stamp_copy_label(
     doc,
     text="สำเนาคู่ฉบับ",
     font="TH SarabunPSK",
     size_pt=18,
-    top_pt=20,          # ระยะจากขอบบนกระดาษ (ปรับเลขนี้ทีละ 4 ถ้าอยากขยับขึ้น/ลง)
+    top_pt=20,
     width_pt=240,
-    color="000000",     # "FF0000" = แดง
+    color="000000",
 ):
-  """
-  วางข้อความลอยแบบ absolute อ้างอิง 'ขอบกระดาษ' (page)
-  → กึ่งกลางบนสุดเหนือตราครุฑ และไม่ดันเนื้อหาลงแม้แต่บรรทัดเดียว
-  """
   if not doc.paragraphs:
     return False
 
   anchor = doc.paragraphs[0]
-  sz = int(size_pt * 2)  # half-point
+  sz = int(size_pt * 2)
   xml = (
       f'<w:r {VML_NS}><w:pict>'
       f'<v:rect id="CopyStampBox" style="position:absolute;'
@@ -401,7 +394,7 @@ def stamp_copy_label(
 
 
 # =========================================================================
-# 🚀 3. LOGIC ประมวลผลสร้างเอกสาร (รักษา Logic เดิม 100% ห้ามตัดทอน)
+# DOCUMENT GENERATION PROCESS
 # =========================================================================
 def generate_documents_process(
     unique_id, template_source_mode, log_func, finish_callback
@@ -493,7 +486,8 @@ def generate_documents_process(
         (i for i, h in enumerate(master_headers) if "P/N" in h or "PN" in h), -1
     )
     idx_nsn = next(
-        (i for i, h in enumerate(master_headers) if "NSN" in h), -1) 
+        (i for i, h in enumerate(master_headers) if "NSN" in h), -1
+    )
     idx_sn = next(
         (i for i, h in enumerate(master_headers) if "S/N" in h or ("SN" in h and "NSN" not in h)), -1
     )
@@ -649,19 +643,16 @@ def generate_documents_process(
             f"\n---------------{p['itemNoThai']}. {clean_name} P/N {p['pn']}"
             f" {code_ref} จำนวน {p['qty']} {p['ua']}"
         )
-        # ✅ FIX ①-A : ใส่ marker ล่องหนไว้ท้ายช่องว่าง (มองไม่เห็นในเอกสาร)
         list_letter.append(
             str_letter.replace("---------------", "             " + PART_MARK)
         )
 
-        # 📌 โค้ดต้นฉบับของคุณ 100% (ฝั่ง memo มี \u200b เป็น marker อยู่แล้ว)
         list_memo.append(
             f"                      ๑.{sub_item_thai}\u200b"
             f" \u200b{clean_name} P/N {p['pn']} {code_ref} จำนวน {p['qty']}"
             f" {p['ua']}"
         )
 
-      # 📌 แยก "ดังนี้:" ด้วย \a เพื่อเว้นล่าง 6 PT และเชื่อม 1.1, 1.2 ให้ติดกันในย่อหน้าเดียวด้วย \t\n เหมือนต้นฉบับ!
       part_details_letter = "ดังนี้:\a" + "".join(list_letter).lstrip("\n")
       part_details_memo = "ดังนี้:\a" + "\n".join(list_memo).lstrip("\n")
 
@@ -698,11 +689,10 @@ def generate_documents_process(
     doc_memo.save(out_memo_path)
 
     # =========================================================================
-    # 🎯 7. จัดย่อหน้าและระยะห่าง (คงลอจิกต้นฉบับ + FIX ① ระยะบล็อกพัสดุ)
+    # PARAGRAPH FORMATTING AND SPACING
     # =========================================================================
     list_pattern = re.compile(r"^([๑-๙0-9]+)\.(?:([๑-๙0-9]+))?\s")
 
-    # === จัดการหนังสือภายนอก (Letter) ===
     doc_l = docx.Document(out_letter_path)
     prev_was_list_l = False
     prev_was_sub_l = False
@@ -713,20 +703,18 @@ def generate_documents_process(
         if not text:
             continue
 
-        # ✅ FIX ①-B : บล็อกรายการพัสดุ → คุมด้วย space_before ตัวเดียว ไม่บวกทบ
         if PART_MARK in raw_text:
             pf = p.paragraph_format
             pf.line_spacing = 1.0
-            pf.space_before = Pt(6)     # ระยะจาก "ดังนี้:" ลงมา 6 PT (ครั้งเดียว)
+            pf.space_before = Pt(6)
             pf.space_after = Pt(0)
             pf.first_line_indent = Pt(0)
             pf.left_indent = Pt(0)
-            pf.keep_together = True     # ไม่ให้พัสดุขาดหน้ากลางคัน
+            pf.keep_together = True
             prev_was_list_l = True
             prev_was_sub_l = True
             continue
 
-        # 📌 ล็อกตราครุฑและโครงสร้าง Template ไม่ให้เด้ง: ปรับระยะบรรทัด 0.90 เฉพาะส่วนที่เป็นเนื้อหาหลักเท่านั้น
         is_body_text = False
         if (
             list_pattern.match(text) or
@@ -743,7 +731,6 @@ def generate_documents_process(
         if is_body_text:
             p.paragraph_format.line_spacing = 1.0
 
-        # ✅ FIX ①-C : "ดังนี้:" ไม่ใส่ space_after แล้ว (ย้ายไปคุมที่ space_before ของบล็อกพัสดุ)
         p.paragraph_format.space_after = Pt(0)
         if text.endswith("ดังนี้:"):
             p.paragraph_format.keep_with_next = True
@@ -778,7 +765,6 @@ def generate_documents_process(
 
     doc_l.save(out_letter_path)
 
-    # === จัดการบันทึกข้อความ (Memo / หนังสือภายใน) ===
     doc_m = docx.Document(out_memo_path)
     prev_was_list_m = False
     prev_was_sub_m = False
@@ -789,7 +775,6 @@ def generate_documents_process(
         if not text:
             continue
 
-        # ✅ FIX ①-B : บล็อกรายการพัสดุฝั่งบันทึกข้อความ
         if PART_MARK in raw_text:
             pf = p.paragraph_format
             pf.line_spacing = 1.0
@@ -803,7 +788,6 @@ def generate_documents_process(
             prev_was_sub_m = True
             continue
 
-        # 📌 ปรับระยะบรรทัด 1.0 เฉพาะส่วนที่เป็นเนื้อหาหลัก
         is_body_m = False
         if (
             list_pattern.match(text) or
@@ -821,7 +805,6 @@ def generate_documents_process(
         if is_body_m:
             p.paragraph_format.line_spacing = 1.0
 
-        # ✅ FIX ①-C : ปิด space_after ทั้งหมด กันบวกทบ
         p.paragraph_format.space_after = Pt(0)
         if text.endswith("ดังนี้:"):
             p.paragraph_format.keep_with_next = True
@@ -863,7 +846,7 @@ def generate_documents_process(
     doc_m.save(out_memo_path)
 
     # =========================================================================
-    # 📌 โค้ดส่วนสร้างสำเนาคู่ฉบับ (สร้างสำหรับทั้งหนังสือภายนอกและบันทึกข้อความ)
+    # GENERATE COPY STAMP DOCUMENTS
     # =========================================================================
     out_copy_letter_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_กห.ภายนอก_{unique_id}.docx")
     out_copy_memo_path = os.path.join(OUTPUT_DIR, f"สำเนาคู่ฉบับ_บันทึกข้อความ_{unique_id}.docx")
@@ -871,19 +854,14 @@ def generate_documents_process(
     def make_copy_doc(src_path, dest_path, doc_type):
         doc_copy = docx.Document(src_path)
 
-        # ✅ FIX ② : ปั๊ม "สำเนาคู่ฉบับ" กลางบนสุดเหนือตราครุฑ แบบลอย
         stamp_copy_label(doc_copy, "สำเนาคู่ฉบับ", size_pt=32, top_pt=18)
 
-        # =====================================================
-        # 1. เก็บย่อหน้าที่ต้องลบ (เฉพาะ memo เท่านั้น)
-        #    🔻 letter = ไม่ลบอะไรเลย ปั๊มอย่างเดียว (กันเบอร์โทรหาย)
-        # =====================================================
         if doc_type == "memo":
             paras = list(doc_copy.paragraphs)
             to_remove = []
 
-            sign_idx = -1  # index ของ "หน.ผคค.กพอ.ชอ."
-            greet_indexes = []  # index ทุกจุดที่เจอ "เรียน จก.ชอ."
+            sign_idx = -1
+            greet_indexes = []
 
             for i, p in enumerate(paras):
                 t = p.text.replace(" ", "").replace("\u200b", "")
@@ -892,12 +870,9 @@ def generate_documents_process(
                 if "เรียนจก.ชอ" in t:
                     greet_indexes.append(i)
 
-            # หา "เรียน จก.ชอ." จุดแรก เพื่อใช้เป็นจุดเริ่มลบ
             first_greet_idx = greet_indexes[0] if greet_indexes else -1
 
             for i, p in enumerate(paras):
-                # ลบตั้งแต่ "เรียน จก.ชอ." ลงไปทั้งหมด
-                # แต่เก็บบรรทัด "หน.ผคค.กพอ.ชอ." ไว้
                 if (
                     first_greet_idx != -1
                     and i >= first_greet_idx
@@ -905,28 +880,22 @@ def generate_documents_process(
                 ):
                     to_remove.append(p)
 
-            # 2. หั่นทิ้งจริง (อยู่ภายในบล็อก memo)
             for p in to_remove:
                 p_element = p._element
                 p_element.getparent().remove(p_element)
                 p._element, p._p = None, None
 
-        # =====================================================
-        # 3. เติมบล็อก "ร่าง พิมพ์ ทาน" ชิดขวา ดันลงล่างสุด
-        # =====================================================
-        blank_lines = 2 if doc_type == "letter" else 12   # 🔻 ปรับตรงนี้
+        blank_lines = 2 if doc_type == "letter" else 12
         for _ in range(blank_lines):
             doc_copy.add_paragraph()
 
         if doc_type == "letter":
-            # หนังสือภายนอก : น.อ. / น.อ. / น.อ.
             footer_texts = [
                 f"ร.อ. ....................................ร่าง ........... {short_date}",
                 f"นาย. ............................พิมพ์/ทาน ........ {short_date}",
                 f"น.อ. .....................................ตรวจ ......... {short_date}",
             ]
         else:
-            # บันทึกข้อความ (ภายใน) : ร.ต. / ร.ต. / ร.ท.
             footer_texts = [
                 f"ร.ต. .....................................ร่าง ........... {short_date}",
                 f"นาย ............................พิมพ์/ทาน ......... {short_date}",
@@ -943,7 +912,6 @@ def generate_documents_process(
 
         doc_copy.save(dest_path)
 
-    # สั่งทำสำเนาคู่ฉบับทั้ง 2 ไฟล์
     make_copy_doc(out_letter_path, out_copy_letter_path, "letter")
     make_copy_doc(out_memo_path, out_copy_memo_path, "memo")
 
@@ -965,10 +933,9 @@ def generate_documents_process(
 
 
 # =========================================================================
-# 🎨 STREAMLIT WEB INTERFACE (ควบคุมการทำงานระบบออนไลน์)
+# STREAMLIT WEB INTERFACE
 # =========================================================================
 
-# ดึงข้อมูลรหัส LP จาก Google Sheet พร้อม Caching
 @st.cache_data(ttl=60)
 def fetch_lps():
   scopes = [
@@ -983,90 +950,133 @@ def fetch_lps():
   return list(dict.fromkeys(reversed(lps)))[:30]
 
 
-# 1. การ์ดตั้งค่าตัวเลือกสร้างเอกสาร
-st.markdown(
-    '<div style="background:#ffffff; padding:22px; border-radius:16px;'
-    ' border:1px solid #e2e8f0; box-shadow:0 4px 12px'
-    ' rgba(0,0,0,0.03);margin-bottom:20px;">',
-    unsafe_allow_html=True,
-)
+SECRET_PASSWORD = "36529"
 
-template_mode = st.radio(
-    "🌐 เลือกแหล่งที่มาของแม่แบบเอกสาร:",
-    ["online", "local"],
-    format_func=lambda x: (
-        "ระบบออนไลน์ (OneDrive)"
-        if x == "online"
-        else "ระบบเครื่อง (.docx ในเครื่อง)"
-    ),
-    horizontal=True,
-)
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
 
-try:
-  lp_options = fetch_lps()
-  selected_lp = st.selectbox("📌 เลือกรหัส LP หรือระบุรหัสเอกสาร:", lp_options)
-except Exception as e:
-  st.error(f"ไม่สามารถเชื่อมต่อ Google Sheet ได้: {e}")
-  selected_lp = st.text_input("กรอกรหัส LP เอง:")
+if "selected_module" not in st.session_state:
+    st.session_state["selected_module"] = "prep"
 
-st.markdown("</div>", unsafe_allow_html=True)
+# Authentication step
+if not st.session_state["authenticated"]:
+    st.markdown(
+        '<div style="background:#ffffff; padding:25px; border-radius:16px; border:1px solid #e2e8f0; max-width:500px; margin:20px auto; box-shadow:0 4px 12px rgba(0,0,0,0.05);">'
+        '<h3 style="text-align:center; color:#0d47a1; margin-bottom:15px;">🔒 การยืนยันตัวตนก่อนเข้าใช้งาน</h3>',
+        unsafe_allow_html=True
+    )
+    pwd_input = st.text_input("กรอกรหัสผ่านเพื่ออนุมัติเข้าใช้งานระบบ:", type="password", key="login_pwd")
+    if st.button("🔓 เข้าสู่ระบบ", type="primary", key="login_btn"):
+        if pwd_input == SECRET_PASSWORD:
+            st.session_state["authenticated"] = True
+            st.rerun()
+        else:
+            st.error("❌ รหัสผ่านไม่ถูกต้อง! ไม่ได้รับอนุญาตให้เข้าใช้งานระบบ")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# =========================================================================
-# 📌 ปุ่มสั่งสร้างเอกสาร Word พร้อมระบบล็อกรหัสผ่าน
-# =========================================================================
-SECRET_PASSWORD = "36529" 
+else:
+    # Navigation Buttons Header
+    st.markdown(
+        '<div style="background:#ffffff; padding:18px; border-radius:16px; border:1px solid #e2e8f0; margin-bottom:20px; box-shadow:0 4px 12px rgba(0,0,0,0.03);">'
+        '<h4 style="text-align:center; color:#1565c0; margin-bottom:15px; font-weight:600;">📌 เลือกเมนูการสร้างหนังสือราชการ</h4>',
+        unsafe_allow_html=True
+    )
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📄 สร้างหนังสือ กห. จัดเตรียม", key="btn_prep", type="primary" if st.session_state["selected_module"] == "prep" else "secondary"):
+            st.session_state["selected_module"] = "prep"
+            st.rerun()
 
-doc_password = st.text_input(
-    "🔒 กรอกรหัสผ่านเพื่ออนุมัติการสร้างเอกสาร:", type="password"
-)
+    with col2:
+        if st.button("📥 สร้างหนังสือ กห. รับ", key="btn_recv", type="primary" if st.session_state["selected_module"] == "recv" else "secondary"):
+            st.session_state["selected_module"] = "recv"
+            st.rerun()
 
-if st.button("🚀 เริ่มสร้างเอกสาร Word", type="primary"):
-  if not selected_lp:
-    st.warning("กรุณาเลือกรหัส LP ก่อนครับ")
-  elif doc_password != SECRET_PASSWORD:
-    st.error("❌ รหัสผ่านไม่ถูกต้อง! ไม่ได้รับอนุญาตให้สร้างเอกสารราชการฉบับนี้")
-  else:
-    log_area = st.empty()
-    logs_list = []
+    with col3:
+        if st.button("📑 สร้างหนังสือภายในจัดซื้อจัดจ้าง", key="btn_proc", type="primary" if st.session_state["selected_module"] == "proc" else "secondary"):
+            st.session_state["selected_module"] = "proc"
+            st.rerun()
 
-    def web_log(text):
-      logs_list.append(text)
-      log_area.code("\n".join(logs_list), language="bash")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    def web_finish(success, message, letter_p, memo_p, copy_letter_p, copy_memo_p):
-      if success:
-        st.success(f"✅ {message}")
-        
-        # มัดรวมไฟล์ทั้งหมดลง ZIP ในหน่วยความจำ
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-            if letter_p and os.path.exists(letter_p):
-                zip_file.write(letter_p, f"๑_หนังสือภายนอก_{clean_lp}.docx")
-            if memo_p and os.path.exists(memo_p):
-                zip_file.write(memo_p, f"๒_บันทึกข้อความ(ต้นฉบับ)_{clean_lp}.docx")
-            if copy_letter_p and os.path.exists(copy_letter_p):
-                zip_file.write(copy_letter_p, f"๓_สำเนาหนังสือภายนอก_{clean_lp}.docx")
-            if copy_memo_p and os.path.exists(copy_memo_p):
-                zip_file.write(copy_memo_p, f"๔_สำเนาบันทึกข้อความ_{clean_lp}.docx")
-        
-        # ปุ่มดาวน์โหลดไฟล์ ZIP 
-        st.download_button(
-            label="📥 ดาวน์โหลดเอกสารทั้งหมด (ไฟล์ ZIP)",
-            data=zip_buffer.getvalue(),
-            file_name=f"Documents_{clean_lp}.zip",
-            mime="application/zip"
+    # Module Router
+    if st.session_state["selected_module"] == "recv":
+        st.warning("⚠️ อยู่ระหว่างการพัฒนาระบบ (สร้างหนังสือ กห. รับ)")
+    elif st.session_state["selected_module"] == "proc":
+        st.warning("⚠️ อยู่ระหว่างการพัฒนาระบบ (สร้างหนังสือภายในจัดซื้อจัดจ้าง)")
+    else:
+        # Module: สร้างหนังสือ กห. จัดเตรียม
+        st.markdown(
+            '<div style="background:#ffffff; padding:22px; border-radius:16px;'
+            ' border:1px solid #e2e8f0; box-shadow:0 4px 12px'
+            ' rgba(0,0,0,0.03);margin-bottom:20px;">',
+            unsafe_allow_html=True,
         )
-      else:
-        st.error(f"❌ เกิดข้อผิดพลาด: {message}")
 
-    clean_lp = selected_lp.replace(" (เคยสร้างแล้ว)", "")
-    with st.spinner("กำลังประมวลผลสร้างเอกสาร..."):
-      generate_documents_process(
-          clean_lp, template_mode, web_log, web_finish
-      )
+        template_mode = st.radio(
+            "🌐 เลือกแหล่งที่มาของแม่แบบเอกสาร:",
+            ["online", "local"],
+            format_func=lambda x: (
+                "ระบบออนไลน์ (OneDrive)"
+                if x == "online"
+                else "ระบบเครื่อง (.docx ในเครื่อง)"
+            ),
+            horizontal=True,
+        )
+
+        try:
+          lp_options = fetch_lps()
+          selected_lp = st.selectbox("📌 เลือกรหัส LP หรือระบุรหัสเอกสาร:", lp_options)
+        except Exception as e:
+          st.error(f"ไม่สามารถเชื่อมต่อ Google Sheet ได้: {e}")
+          selected_lp = st.text_input("กรอกรหัส LP เอง:")
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        if st.button("🚀 เริ่มสร้างเอกสาร Word", type="primary", key="btn_generate_word"):
+          if not selected_lp:
+            st.warning("กรุณาเลือกรหัส LP ก่อนครับ")
+          else:
+            log_area = st.empty()
+            logs_list = []
+
+            def web_log(text):
+              logs_list.append(text)
+              log_area.code("\n".join(logs_list), language="bash")
+
+            def web_finish(success, message, letter_p, memo_p, copy_letter_p, copy_memo_p):
+              if success:
+                st.success(f"✅ {message}")
+                
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+                    if letter_p and os.path.exists(letter_p):
+                        zip_file.write(letter_p, f"๑_หนังสือภายนอก_{clean_lp}.docx")
+                    if memo_p and os.path.exists(memo_p):
+                        zip_file.write(memo_p, f"๒_บันทึกข้อความ(ต้นฉบับ)_{clean_lp}.docx")
+                    if copy_letter_p and os.path.exists(copy_letter_p):
+                        zip_file.write(copy_letter_p, f"๓_สำเนาหนังสือภายนอก_{clean_lp}.docx")
+                    if copy_memo_p and os.path.exists(copy_memo_p):
+                        zip_file.write(copy_memo_p, f"๔_สำเนาบันทึกข้อความ_{clean_lp}.docx")
+                
+                st.download_button(
+                    label="📥 ดาวน์โหลดเอกสารทั้งหมด (ไฟล์ ZIP)",
+                    data=zip_buffer.getvalue(),
+                    file_name=f"Documents_{clean_lp}.zip",
+                    mime="application/zip"
+                )
+              else:
+                st.error(f"❌ เกิดข้อผิดพลาด: {message}")
+
+            clean_lp = selected_lp.replace(" (" (เคยสร้างแล้ว)", "")
+            with st.spinner("กำลังประมวลผลสร้างเอกสาร..."):
+              generate_documents_process(
+                  clean_lp, template_mode, web_log, web_finish
+              )
 
 # =========================================================================
-# 📌 FOOTER SECTION (คณะผู้จัดทำ & ผู้ดูแลระบบ ถอดแบบต้นฉบับ 100%)
+# FOOTER SECTION
 # =========================================================================
 st.markdown("---")
 st.markdown(
