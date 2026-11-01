@@ -34,10 +34,10 @@ st.markdown(
             background-color: #f8fafc !important;
         }
 
-        /* 2. ซ่อน Header/Footer รกๆ ของ Streamlit Default */
-        #MainMenu {visibility: hidden;}
-        header {visibility: hidden;}
-        footer {visibility: hidden;}
+        /* 2. ซ่อน Header/Footer และ Menu Default ทั้งหมด */
+        #MainMenu {visibility: hidden !important;}
+        header {visibility: hidden !important;}
+        footer {visibility: hidden !important;}
 
         /* 3. ตกแต่งหัวข้อหลัก (Executive Header Bar) */
         .main-header-box {
@@ -99,7 +99,7 @@ st.markdown(
             color: #1b5e20 !important;
         }
 
-        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ (แก้ไขให้อยู่กึ่งกลาง ไม่ให้ชื่อโดนตัดบรรทัด) */
+        /* 6. ตกแต่งส่วน Footer ท้ายเว็บ */
         .custom-footer {
             font-family: 'Sarabun', sans-serif;
             text-align: center;
@@ -112,22 +112,19 @@ st.markdown(
             color: #333333;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
         }
-        /* ซ่อน Header, Footer และ Menu Default */
-        #MainMenu {visibility: hidden !important;}
-        header {visibility: hidden !important;}
-        footer {visibility: hidden !important;}
 
-        /* ซ่อน Streamlit Toolbar และ Badge ปุ่มลอยขวาล่างทั้งหมด */
-        [data-testid="stToolbar"] {visibility: hidden !important; height: 0px !important; display: none !important;}
-        [data-testid="stDecoration"] {visibility: hidden !important; display: none !important;}
-        [data-testid="stStatusWidget"] {visibility: hidden !important; display: none !important;}
+        /* 7. ซ่อน Streamlit Toolbar และ Badge ปุ่มลอยขวาล่างทั้งหมด (อัปเดต Selector ปัจจุบัน) */
+        [data-testid="stToolbar"] {display: none !important; visibility: hidden !important; height: 0px !important;}
+        [data-testid="stDecoration"] {display: none !important; visibility: hidden !important;}
+        [data-testid="stStatusWidget"] {display: none !important; visibility: hidden !important;}
         .stAppDeployButton {display: none !important;}
         
-        /* ซ่อนปุ่ม Manage App / Streamlit Icon / Crown Badge */
-        div[class*="viewerBadge"] {display: none !important;}
-        div[class*="styles_viewerBadge"] {display: none !important;}
-        div[class*="stAppViewerBadge"] {display: none !important;}
-        .viewerBadge_container__1QSob {display: none !important;}
+        /* ซ่อนปุ่ม Manage App / Streamlit Icon / Crown Badge ทุกรูปแบบ */
+        [class*="viewerBadge"] {display: none !important;}
+        [class*="styles_viewerBadge"] {display: none !important;}
+        [class*="stAppViewerBadge"] {display: none !important;}
+        div[data-testid="stAppViewBlockContainer"] ~ div {display: none !important;}
+        iframe[title="Streamlit App"] ~ div {display: none !important;}
 
         .footer-system-title {
             font-size: 1.05rem;
@@ -163,7 +160,6 @@ st.markdown(
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             text-align: center;
         }
-        /* บังคับไม่ให้ชื่อเว้นบรรทัดเด็ดขาด */
         .custom-footer strong {
             white-space: nowrap;
         }
@@ -978,8 +974,21 @@ if "selected_module" not in st.session_state:
 # Authentication step
 if not st.session_state["authenticated"]:
     st.markdown(
-        '<div style="background:#ffffff; padding:25px; border-radius:16px; border:1px solid #e2e8f0; max-width:500px; margin:20px auto; box-shadow:0 4px 12px rgba(0,0,0,0.05);">'
-        '<h3 style="text-align:center; color:#0d47a1; margin-bottom:15px;">🔒 การยืนยันตัวตนก่อนเข้าใช้งาน</h3>',
+        """
+        <style>
+            [data-testid="stToolbar"] {display: none !important; visibility: hidden !important; height: 0px !important;}
+            [data-testid="stDecoration"] {display: none !important; visibility: hidden !important;}
+            [data-testid="stStatusWidget"] {display: none !important; visibility: hidden !important;}
+            .stAppDeployButton {display: none !important;}
+            [class*="viewerBadge"] {display: none !important;}
+            [class*="styles_viewerBadge"] {display: none !important;}
+            [class*="stAppViewerBadge"] {display: none !important;}
+            div[data-testid="stAppViewBlockContainer"] ~ div {display: none !important;}
+            iframe[title="Streamlit App"] ~ div {display: none !important;}
+        </style>
+        <div style="background:#ffffff; padding:25px; border-radius:16px; border:1px solid #e2e8f0; max-width:500px; margin:20px auto; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+        <h3 style="text-align:center; color:#0d47a1; margin-bottom:15px;">🔒 การยืนยันตัวตนก่อนเข้าใช้งาน</h3>
+        """,
         unsafe_allow_html=True
     )
     pwd_input = st.text_input("กรอกรหัสผ่านเพื่ออนุมัติเข้าใช้งานระบบ:", type="password", key="login_pwd")
